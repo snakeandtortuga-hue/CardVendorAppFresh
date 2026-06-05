@@ -537,17 +537,35 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
     return 0;
   };
 
+  const [barterItemType, setBarterItemType] = useState('raw'); // 'raw', 'graded', 'sealed'
+  const [barterGrader, setBarterGrader] = useState('PSA');
+  const [barterGrade, setBarterGrade] = useState('9');
+  const [barterSealedCondIndex, setBarterSealedCondIndex] = useState(0);
+
   const addToDeck = (card) => {
     const price = getCardPrice(card);
-    const condMult = CONDITIONS[barterConditionIndex].multiplier;
-    const pct = barterTarget === 'my' ? myPercentage : theirPercentage;
+    let condMult = 1.0;
+    let conditionLabel = '';
+
+    if (barterItemType === 'raw') {
+      condMult = CONDITIONS[barterConditionIndex].multiplier;
+      conditionLabel = CONDITIONS[barterConditionIndex].label;
+    } else if (barterItemType === 'graded') {
+      condMult = 1.0;
+      conditionLabel = `${barterGrader} ${barterGrade}`;
+    } else if (barterItemType === 'sealed') {
+      condMult = SEALED_CONDITIONS[barterSealedCondIndex].multiplier;
+      conditionLabel = SEALED_CONDITIONS[barterSealedCondIndex].label;
+    }
+
     const entry = {
       id: `${card.id}_${Date.now()}`,
       card,
+      itemType: barterItemType,
       conditionIndex: barterConditionIndex,
-      condition: CONDITIONS[barterConditionIndex].label,
+      condition: conditionLabel,
       price,
-      vendorPrice: price * (pct / 100) * condMult,
+      vendorPrice: price * ((barterTarget === 'my' ? myPercentage : theirPercentage) / 100) * condMult,
     };
     if (barterTarget === 'my') setMyDeck(prev => [...prev, entry]);
     else setTheirDeck(prev => [...prev, entry]);
@@ -792,19 +810,87 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
           <Text style={[styles.back, { color: theme.accent }]}>{t.backTrade}</Text>
         </TouchableOpacity>
         <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.addingTo} {barterTarget === 'my' ? t.yourDeck : t.theirDeck}</Text>
-        <View style={styles.conditionRow}>
-          {CONDITIONS.map((c, i) => (
-            <TouchableOpacity key={c.label} style={[styles.conditionButton, { backgroundColor: barterConditionIndex === i ? CONDITION_COLORS[i] : theme.chip }]} onPress={() => setBarterConditionIndex(i)}>
-              <Text style={[styles.conditionText, { color: barterConditionIndex === i ? '#fff' : theme.textSecondary }]}>{c.label}</Text>
+
+        {/* Item Type Selector */}
+        <View style={{ flexDirection: 'row', marginBottom: 12, gap: 8 }}>
+          {['raw', 'graded', 'sealed'].map((type) => (
+            <TouchableOpacity key={type} style={{ flex: 1, padding: 10, borderRadius: 8, borderWidth: 1, alignItems: 'center', borderColor: barterItemType === type ? theme.accent : theme.cardBorder, backgroundColor: barterItemType === type ? theme.accent : theme.card }} onPress={() => setBarterItemType(type)}>
+              <Text style={{ color: barterItemType === type ? '#fff' : theme.textSecondary, fontWeight: 'bold', fontSize: 12 }}>
+                {type === 'raw' ? '🃏 Raw' : type === 'graded' ? '🏆 Graded' : '📦 Sealed'}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Raw card condition */}
+        {barterItemType === 'raw' && (
+          <View style={styles.conditionRow}>
+            {CONDITIONS.map((c, i) => (
+              <TouchableOpacity key={c.label} style={[styles.conditionButton, { backgroundColor: barterConditionIndex === i ? CONDITION_COLORS[i] : theme.chip }]} onPress={() => setBarterConditionIndex(i)}>
+                <Text style={[styles.conditionText, { color: barterConditionIndex === i ? '#fff' : theme.textSecondary }]}>{c.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Graded card options */}
+        {barterItemType === 'graded' && (
+          <View style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+              {GRADERS.map((g) => (
+                <TouchableOpacity key={g} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: barterGrader === g ? theme.accent : theme.cardBorder, backgroundColor: barterGrader === g ? theme.accent : theme.card }} onPress={() => setBarterGrader(g)}>
+                  <Text style={{ color: barterGrader === g ? '#fff' : theme.textSecondary, fontWeight: 'bold' }}>{g}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {PSA_GRADES.map((g) => (
+                  <TouchableOpacity key={g} style={{ width: 44, height: 44, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center', borderColor: barterGrade === g ? theme.accent : theme.cardBorder, backgroundColor: barterGrade === g ? theme.accent : theme.card }} onPress={() => setBarterGrade(g)}>
+                    <Text style={{ color: barterGrade === g ? '#fff' : theme.textSecondary, fontWeight: 'bold' }}>{g}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Sealed condition */}
+        {barterItemType === 'sealed' && (
+          <View style={{ marginBottom: 12 }}>
+            {SEALED_CONDITIONS.map((c, i) => (
+              <TouchableOpacity key={c.label} style={{ padding: 12, borderRadius: 8, borderWidth: 1, alignItems: 'center', marginBottom: 6, borderColor: barterSealedCondIndex === i ? theme.accent : theme.cardBorder, backgroundColor: barterSealedCondIndex === i ? theme.accent : theme.card }} onPress={() => setBarterSealedCondIndex(i)}>
+                <Text style={{ color: barterSealedCondIndex === i ? '#fff' : theme.textSecondary, fontWeight: 'bold' }}>{c.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
         <View style={styles.searchRow}>
+          <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.chip }]} onPress={openCamera}>
+            <Text style={styles.micIcon}>📷</Text>
+          </TouchableOpacity>
           <TextInput style={[styles.input, { backgroundColor: theme.input, borderColor: theme.inputBorder, color: theme.text }]} placeholder={t.searchPlaceholder} placeholderTextColor={theme.textMuted} value={barterQuery} onChangeText={setBarterQuery} onSubmitEditing={searchBarterCards} returnKeyType="search" />
           <TouchableOpacity style={[styles.button, { backgroundColor: theme.accent }]} onPress={searchBarterCards}>
             <Text style={styles.buttonText}>{t.search}</Text>
           </TouchableOpacity>
         </View>
+
+        {cameraOpen && (
+          <View style={styles.cameraContainer}>
+            <CameraView style={styles.camera} facing="back">
+              <View style={styles.cameraOverlay}>
+                <View style={styles.cameraFrame} />
+                <Text style={styles.cameraHint}>Point at card to identify</Text>
+                <TouchableOpacity style={styles.cameraClose} onPress={() => setCameraOpen(false)}>
+                  <Text style={styles.cameraCloseText}>✕ Close Camera</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cameraScanButton} onPress={() => { setCameraOpen(false); alert('Camera card recognition coming in final build. Use search for now.'); }}>
+                  <Text style={styles.cameraScanButtonText}>📷 Scan Card</Text>
+                </TouchableOpacity>
+              </View>
+            </CameraView>
+          </View>
+        )}
         {barterLoading && <ActivityIndicator size="large" color={theme.accent} />}
         <FlatList
           data={barterResults}
