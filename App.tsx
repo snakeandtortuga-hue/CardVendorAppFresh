@@ -217,7 +217,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -321,6 +321,9 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const [priceHistory, setPriceHistory] = useState([]);
   const [searchError, setSearchError] = useState('');
+  const [sets, setSets] = useState([]);
+const [trendingCards, setTrendingCards] = useState([]);
+const [discoverLoading, setDiscoverLoading] = useState(false);
   const [ebayPrices, setEbayPrices] = useState({});
 
   const t = TRANSLATIONS[appLang];
@@ -331,6 +334,7 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
     loadSettings();
     loadRecentSearches();
     loadSavedTrades();
+    fetchDiscoverData();
   }, []);
 
   const loadSettings = async () => {
@@ -412,6 +416,24 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
   const convertPrice = (usdPrice, currencyCode) => {
     if (!usdPrice || !exchangeRates[currencyCode]) return null;
     return usdPrice * exchangeRates[currencyCode];
+  };
+
+  const fetchDiscoverData = async () => {
+    setDiscoverLoading(true);
+    try {
+      // Fetch recent and upcoming sets
+      const setsResponse = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=20');
+      const setsData = await setsResponse.json();
+      setSets(setsData.data || []);
+
+      // Fetch cards with high prices for trending
+      const trendingResponse = await fetch('https://api.pokemontcg.io/v2/cards?orderBy=-tcgplayer.prices.holofoil.market&pageSize=20&q=tcgplayer.prices.holofoil.market:[10 TO *]');
+      const trendingData = await trendingResponse.json();
+      setTrendingCards(trendingData.data || []);
+    } catch (e) {
+      console.error('Discover fetch error', e);
+    }
+    setDiscoverLoading(false);
   };
 
   const loadSavedTrades = async () => {
@@ -729,6 +751,7 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
       { screen: SCREENS.SEARCH, icon: '🔍', label: 'Singles', active: screen === SCREENS.SEARCH || screen === SCREENS.CARD },
       { screen: SCREENS.SEALED, icon: '📦', label: 'Sealed', active: screen === SCREENS.SEALED },
       { screen: SCREENS.BARTER, icon: '🤝', label: 'Barter', active: screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH },
+      { screen: SCREENS.DISCOVER, icon: '📰', label: 'Discover', active: screen === SCREENS.DISCOVER },
     ];
     return (
       <View style={{ flexDirection: 'row', marginBottom: 15, backgroundColor: theme.tabBg, borderRadius: 16, padding: 4, borderWidth: 1, borderColor: theme.cardBorder }}>
@@ -1049,6 +1072,121 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
     );
   }
 
+  if (screen === SCREENS.DISCOVER) {
+    const today = new Date();
+    const upcomingSets = sets.filter(s => new Date(s.releaseDate) > today).reverse();
+    const recentSets = sets.filter(s => new Date(s.releaseDate) <= today);
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        {renderHeader()}
+        {renderTabBar()}
+        <ScrollView showsVerticalScrollIndicator={false}>
+
+          {/* SET RELEASE CALENDAR */}
+          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12 }]}>📅 Set Release Calendar</Text>
+
+          {upcomingSets.length > 0 && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>UPCOMING</Text>
+              {upcomingSets.slice(0, 5).map((set) => {
+                const release = new Date(set.releaseDate);
+                const daysUntil = Math.ceil((release - today) / (1000 * 60 * 60 * 24));
+                return (
+                  <View key={set.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: theme.accent }}>
+                    <Image source={{ uri: set.images?.symbol }} style={{ width: 36, height: 36, marginRight: 12 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{set.name}</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>{set.series} • {set.total} cards</Text>
+                    </View>
+                    <View style={{ alignItems: 'center', backgroundColor: theme.accent, borderRadius: 8, padding: 8 }}>
+                      <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{daysUntil}</Text>
+                      <Text style={{ color: '#fff', fontSize: 9 }}>days</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          <Text style={{ color: theme.textSecondary, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>RECENT RELEASES</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {recentSets.slice(0, 10).map((set) => (
+                <View key={set.id} style={{ width: 120, backgroundColor: theme.card, borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Image source={{ uri: set.images?.logo }} style={{ width: 100, height: 40, resizeMode: 'contain', marginBottom: 6 }} />
+                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 11, textAlign: 'center' }} numberOfLines={2}>{set.name}</Text>
+                  <Text style={{ color: theme.textMuted, fontSize: 10, marginTop: 2 }}>{set.releaseDate}</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 10 }}>{set.total} cards</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+
+          {/* TRENDING CARDS */}
+          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12 }]}>🔥 Trending Cards</Text>
+          <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 12 }}>Highest valued cards right now</Text>
+          {discoverLoading ? (
+            <ActivityIndicator size="large" color={theme.accent} />
+          ) : (
+            trendingCards.slice(0, 10).map((card, index) => {
+              const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
+              return (
+                <TouchableOpacity key={card.id} onPress={() => selectCard(card)}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                    <Text style={{ color: theme.textMuted, fontWeight: 'bold', fontSize: 16, width: 28 }}>#{index + 1}</Text>
+                    <Image source={{ uri: card.images?.small }} style={{ width: 44, height: 62, borderRadius: 4, marginRight: 12 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{card.name}</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>{card.set?.name}</Text>
+                      <Text style={{ color: theme.textMuted, fontSize: 11 }}>#{card.number}</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 18 }}>${price.toFixed(2)}</Text>
+                      <Text style={{ color: '#4caf50', fontSize: 11, marginTop: 2 }}>▲ Hot</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
+
+          {/* BIGGEST GAINERS & LOSERS */}
+          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 8 }]}>📊 Price Movers</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
+            <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#4caf50' }}>
+              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ Gainers</Text>
+              {trendingCards.slice(0, 5).map((card) => {
+                const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
+                return (
+                  <TouchableOpacity key={card.id} onPress={() => selectCard(card)} style={{ marginBottom: 8 }}>
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: 'bold' }} numberOfLines={1}>{card.name}</Text>
+                    <Text style={{ color: '#4caf50', fontSize: 12 }}>${price.toFixed(2)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.accent }}>
+              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▼ Losers</Text>
+              {trendingCards.slice(10, 15).map((card) => {
+                const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
+                return (
+                  <TouchableOpacity key={card.id} onPress={() => selectCard(card)} style={{ marginBottom: 8 }}>
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: 'bold' }} numberOfLines={1}>{card.name}</Text>
+                    <Text style={{ color: theme.accent, fontSize: 12 }}>${price.toFixed(2)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          <TouchableOpacity style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: theme.accent, alignItems: 'center', marginBottom: 30 }} onPress={fetchDiscoverData}>
+            <Text style={{ color: theme.accent, fontWeight: 'bold' }}>🔄 Refresh Data</Text>
+          </TouchableOpacity>
+
+        </ScrollView>
+      </View>
+    );
+  }
   if (screen === SCREENS.SEALED) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
