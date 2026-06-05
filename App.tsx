@@ -317,6 +317,7 @@ export default function App() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [priceHistory, setPriceHistory] = useState([]);
   const [searchError, setSearchError] = useState('');
+  const [ebayPrices, setEbayPrices] = useState({});
 
   const t = TRANSLATIONS[appLang];
 
@@ -519,6 +520,7 @@ export default function App() {
     const history = generateMockPriceHistory(currentPrice, card.set?.releaseDate);
     setPriceHistory(history);
     setScreen(SCREENS.CARD);
+    fetchEbayPrice(card.name);
   };
 
   const lookupCert = async () => {
@@ -536,6 +538,60 @@ export default function App() {
     return CGC_GRADES;
   };
 
+  const getEbayToken = async () => {
+    try {
+      const clientId = process.env.EXPO_PUBLIC_EBAY_CLIENT_ID;
+      const clientSecret = process.env.EXPO_PUBLIC_EBAY_CLIENT_SECRET;
+      const credentials = btoa(`${clientId}:${clientSecret}`);
+      const response = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope',
+      });
+      const data = await response.json();
+      return data.access_token;
+    } catch (e) {
+      console.error('eBay token error', e);
+      return null;
+    }
+  };
+
+  const fetchEbayPrice = async (cardName) => {
+    try {
+      const token = await getEbayToken();
+      if (!token) return;
+      const query = encodeURIComponent(`${cardName} pokemon card`);
+      const response = await fetch(
+        `https://api.ebay.com/buy/marketplace-insights/v1_beta/item_sales/search?q=${query}&limit=10`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.itemSales && data.itemSales.length > 0) {
+        const prices = data.itemSales
+          .map(item => parseFloat(item.lastSoldPrice?.value || 0))
+          .filter(p => p > 0);
+        if (prices.length > 0) {
+          const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+          const recent = parseFloat(data.itemSales[0].lastSoldPrice?.value || 0);
+          setEbayPrices(prev => ({
+            ...prev,
+            [cardName]: { sold: recent, avg30: avg }
+          }));
+        }
+      }
+    } catch (e) {
+      console.error('eBay fetch error', e);
+    }
+  };
+
   const getPrice = (card, source) => {
     if (source === 'tcgplayer') {
       if (!card.tcgplayer || !card.tcgplayer.prices) return null;
@@ -544,6 +600,12 @@ export default function App() {
       if (prices.normal) return prices.normal.market;
       if (prices.reverseHolofoil) return prices.reverseHolofoil.market;
       return null;
+    }
+    if (source === 'ebay_sold') {
+      return ebayPrices[card.name]?.sold || null;
+    }
+    if (source === 'ebay_30day') {
+      return ebayPrices[card.name]?.avg30 || null;
     }
     return null;
   };
