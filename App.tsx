@@ -288,6 +288,8 @@ export default function App() {
   const [anchorSource, setAnchorSource] = useState('tcgplayer');
   const [conditionIndex, setConditionIndex] = useState(5);
   const [percentage, setPercentage] = useState(80);
+  const [sealedPercentage, setSealedPercentage] = useState(80);
+const [gradedPercentage, setGradedPercentage] = useState(70);
   const [listening, setListening] = useState(false);
   const [cardLanguage, setCardLanguage] = useState('en');
   const [exchangeRates, setExchangeRates] = useState({});
@@ -413,12 +415,26 @@ export default function App() {
     try {
       const value = await AsyncStorage.getItem('vendor_percentage');
       if (value !== null) setPercentage(Number(value));
+      const sealedValue = await AsyncStorage.getItem('sealed_percentage');
+      if (sealedValue !== null) setSealedPercentage(Number(sealedValue));
+      const gradedValue = await AsyncStorage.getItem('graded_percentage');
+      if (gradedValue !== null) setGradedPercentage(Number(gradedValue));
     } catch (error) {}
   };
 
   const savePercentage = async (newPercentage) => {
     setPercentage(newPercentage);
     await AsyncStorage.setItem('vendor_percentage', String(newPercentage));
+  };
+
+  const saveSealedPercentage = async (newPercentage) => {
+    setSealedPercentage(newPercentage);
+    await AsyncStorage.setItem('sealed_percentage', String(newPercentage));
+  };
+
+  const saveGradedPercentage = async (newPercentage) => {
+    setGradedPercentage(newPercentage);
+    await AsyncStorage.setItem('graded_percentage', String(newPercentage));
   };
 
   const fetchAllCards = async (searchQuery) => {
@@ -613,7 +629,8 @@ export default function App() {
   const getAnchorPrice = () => getPrice(selectedCard, anchorSource);
   const conditionMultiplier = isGraded ? 1.0 : CONDITIONS[conditionIndex].multiplier;
   const anchorPrice = selectedCard ? getAnchorPrice() : null;
-  const vendorPrice = anchorPrice ? anchorPrice * (percentage / 100) * conditionMultiplier : null;
+  const activePercentage = isGraded ? gradedPercentage : percentage;
+  const vendorPrice = anchorPrice ? anchorPrice * (activePercentage / 100) * conditionMultiplier : null;
   const isPhase2Language = !['en', 'ja'].includes(cardLanguage);
 
   const sourceLabel = {
@@ -683,6 +700,39 @@ export default function App() {
             </View>
           </ScrollView>
           {isPhase2Language && <Text style={[styles.phase2Note, { color: theme.variantBorder }]}>{t.phase2Note}</Text>}
+
+          <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>Vendor Price Defaults</Text>
+
+          <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Singles</Text>
+            <Text style={[styles.percentageValue, { color: theme.accent }]}>{percentage}%</Text>
+          </View>
+          <View style={styles.sliderRow}>
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
+            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={percentage} onValueChange={(val) => savePercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          </View>
+
+          <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Sealed Products</Text>
+            <Text style={[styles.percentageValue, { color: theme.accent }]}>{sealedPercentage}%</Text>
+          </View>
+          <View style={styles.sliderRow}>
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
+            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={sealedPercentage} onValueChange={(val) => saveSealedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          </View>
+
+          <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Graded Cards</Text>
+            <Text style={[styles.percentageValue, { color: theme.accent }]}>{gradedPercentage}%</Text>
+          </View>
+          <View style={styles.sliderRow}>
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
+            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={gradedPercentage} onValueChange={(val) => saveGradedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          </View>
+
         </ScrollView>
       </View>
     );
@@ -1068,7 +1118,7 @@ export default function App() {
             </View>
 
             <View style={[styles.vendorBox, { backgroundColor: theme.accentLight }]}>
-              <Text style={[styles.vendorLabel, { color: theme.accent }]}>{t.yourPrice} ({percentage}% — {isGraded ? `${selectedGrader} ${selectedGrade}` : CONDITIONS[conditionIndex].label})</Text>
+              <Text style={[styles.vendorLabel, { color: theme.accent }]}>{t.yourPrice} ({activePercentage}% — {isGraded ? `${selectedGrader} ${selectedGrade}` : CONDITIONS[conditionIndex].label})</Text>
               {vendorPrice ? <Text style={[styles.vendorPrice, { color: theme.accent }]}>${vendorPrice.toFixed(2)}</Text> : <Text style={[styles.noPrice, { color: theme.textMuted }]}>—</Text>}
               <Text style={[styles.percentageValue, { color: theme.accent }]}>{percentage}%</Text>
               <View style={styles.sliderRow}>
