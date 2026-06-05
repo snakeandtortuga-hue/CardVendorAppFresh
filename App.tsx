@@ -712,27 +712,44 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
     return `${CURRENCIES.find(c => c.code === code)?.symbol}${amount.toFixed(2)}`;
   };
 
-  const renderTabBar = () => (
-    <View style={[styles.tabBar, { borderColor: theme.accent, backgroundColor: theme.tabBg }]}>
-      <TouchableOpacity style={[styles.tab, (screen === SCREENS.SEARCH || screen === SCREENS.CARD) && { backgroundColor: theme.accent }]} onPress={() => setScreen(SCREENS.SEARCH)}>
-        <Text style={[styles.tabText, { color: (screen === SCREENS.SEARCH || screen === SCREENS.CARD) ? '#fff' : theme.accent }]}>{t.singles}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.tab, screen === SCREENS.SEALED && { backgroundColor: theme.accent }]} onPress={() => setScreen(SCREENS.SEALED)}>
-        <Text style={[styles.tabText, { color: screen === SCREENS.SEALED ? '#fff' : theme.accent }]}>{t.sealed}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.tab, (screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH) && { backgroundColor: theme.accent }]} onPress={() => setScreen(SCREENS.BARTER)}>
-        <Text style={[styles.tabText, { color: (screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH) ? '#fff' : theme.accent }]}>{t.barter}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.tab, screen === SCREENS.SETTINGS && { backgroundColor: theme.accent }]} onPress={() => setScreen(SCREENS.SETTINGS)}>
-        <Text style={[styles.tabText, { color: screen === SCREENS.SETTINGS ? '#fff' : theme.accent }]}>⚙️</Text>
+  const renderHeader = () => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+      <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
+      <TouchableOpacity
+        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.SETTINGS ? theme.accent : theme.chip }}
+        onPress={() => setScreen(screen === SCREENS.SETTINGS ? SCREENS.SEARCH : SCREENS.SETTINGS)}
+      >
+        <Text style={{ fontSize: 20 }}>⚙️</Text>
       </TouchableOpacity>
     </View>
   );
 
+  const renderTabBar = () => {
+    const tabs = [
+      { screen: SCREENS.SEARCH, icon: '🔍', label: 'Singles', active: screen === SCREENS.SEARCH || screen === SCREENS.CARD },
+      { screen: SCREENS.SEALED, icon: '📦', label: 'Sealed', active: screen === SCREENS.SEALED },
+      { screen: SCREENS.BARTER, icon: '🤝', label: 'Barter', active: screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH },
+    ];
+    return (
+      <View style={{ flexDirection: 'row', marginBottom: 15, backgroundColor: theme.tabBg, borderRadius: 16, padding: 4, borderWidth: 1, borderColor: theme.cardBorder }}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.screen}
+            style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: tab.active ? theme.accent : 'transparent' }}
+            onPress={() => setScreen(tab.screen)}
+          >
+            <Text style={{ fontSize: 18 }}>{tab.icon}</Text>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: tab.active ? '#fff' : theme.textSecondary, marginTop: 2 }}>{tab.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
   if (screen === SCREENS.SETTINGS) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        <Text style={[styles.title, { color: theme.text }]}>{t.title}</Text>
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView>
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.appearance}</Text>
@@ -915,22 +932,27 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
   if (screen === SCREENS.BARTER) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        <Text style={[styles.title, { color: theme.text }]}>{t.title}</Text>
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView>
           <View style={styles.barterContainer}>
             <View style={styles.deckColumn}>
               <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.yourDeck} ({myDeck.length})</Text>
               {myDeck.map((entry) => (
-                <View key={entry.id} style={[styles.deckCard, { backgroundColor: theme.deckCard }]}>
-                  <Image source={{ uri: entry.card.images.small }} style={styles.deckCardImage} />
-                  <View style={styles.deckCardInfo}>
-                    <Text style={[styles.deckCardName, { color: theme.text }]} numberOfLines={1}>{entry.card.name}</Text>
-                    <Text style={[styles.deckCardCond, { color: theme.textSecondary }]}>{entry.condition}</Text>
-                    <Text style={[styles.deckCardPrice, { color: theme.accent }]}>${entry.vendorPrice.toFixed(2)}</Text>
+                <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
+                    <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{entry.card.set?.name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                      <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: 'bold' }}>{entry.condition}</Text>
+                      </View>
+                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * ((entry.id.includes('my') ? myPercentage : theirPercentage) / 100)).toFixed(2)}</Text>
+                    </View>
                   </View>
-                  <TouchableOpacity onPress={() => removeFromDeck('my', entry.id)}>
-                    <Text style={[styles.removeBtn, { color: theme.textMuted }]}>✕</Text>
+                  <TouchableOpacity onPress={() => removeFromDeck('my', entry.id)} style={{ padding: 8 }}>
+                    <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
                   </TouchableOpacity>
                 </View>
               ))}
@@ -949,15 +971,20 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
             <View style={styles.deckColumn}>
               <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.theirDeck} ({theirDeck.length})</Text>
               {theirDeck.map((entry) => (
-                <View key={entry.id} style={[styles.deckCard, { backgroundColor: theme.deckCard }]}>
-                  <Image source={{ uri: entry.card.images.small }} style={styles.deckCardImage} />
-                  <View style={styles.deckCardInfo}>
-                    <Text style={[styles.deckCardName, { color: theme.text }]} numberOfLines={1}>{entry.card.name}</Text>
-                    <Text style={[styles.deckCardCond, { color: theme.textSecondary }]}>{entry.condition}</Text>
-                    <Text style={[styles.deckCardPrice, { color: theme.accent }]}>${entry.vendorPrice.toFixed(2)}</Text>
+                <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
+                    <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{entry.card.set?.name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                      <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: 'bold' }}>{entry.condition}</Text>
+                      </View>
+                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * (theirPercentage / 100)).toFixed(2)}</Text>
+                    </View>
                   </View>
-                  <TouchableOpacity onPress={() => removeFromDeck('their', entry.id)}>
-                    <Text style={[styles.removeBtn, { color: theme.textMuted }]}>✕</Text>
+                  <TouchableOpacity onPress={() => removeFromDeck('their', entry.id)} style={{ padding: 8 }}>
+                    <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
                   </TouchableOpacity>
                 </View>
               ))}
@@ -1074,7 +1101,7 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <Text style={[styles.title, { color: theme.text }]}>{t.title}</Text>
+      {renderHeader()}
       {renderTabBar()}
 
       {screen === SCREENS.SEARCH && (
@@ -1118,7 +1145,29 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
           )}
           {listening && <Text style={[styles.listeningText, { color: theme.accent }]}>{t.listening}</Text>}
 
-          {results.length === 0 && !loading && recentSearches.length > 0 && !searchError && (
+          {results.length === 0 && !loading && !searchError && query.trim() === '' && (
+            <View style={{ alignItems: 'center', paddingTop: 40, paddingHorizontal: 20 }}>
+              <Text style={{ fontSize: 60, marginBottom: 16 }}>🃏</Text>
+              <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 8, textAlign: 'center' }}>Welcome to TCG Market Master</Text>
+              <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 30, lineHeight: 22 }}>Search any card, check live prices, evaluate trades and manage your barter sessions.</Text>
+              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 30 }}>
+                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Text style={{ fontSize: 28 }}>💰</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Live Prices</Text>
+                </View>
+                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Text style={{ fontSize: 28 }}>🤝</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Barter Engine</Text>
+                </View>
+                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <Text style={{ fontSize: 28 }}>🏆</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Graded Lookup</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {results.length === 0 && !loading && recentSearches.length > 0 && !searchError && query.trim() === '' && (
             <View style={styles.recentContainer}>
               <Text style={[styles.recentTitle, { color: theme.textMuted }]}>{t.recentSearches}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -1351,7 +1400,7 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 0, textAlign: 'left' },
   tabBar: { flexDirection: 'row', marginBottom: 15, borderRadius: 8, overflow: 'hidden', borderWidth: 1 },
   tab: { flex: 1, padding: 10, alignItems: 'center' },
   tabText: { fontSize: 12, fontWeight: 'bold' },
@@ -1451,7 +1500,7 @@ const styles = StyleSheet.create({
   noPrice: { fontSize: 16 },
   vendorBox: { marginTop: 10, alignItems: 'center', padding: 15, borderRadius: 10, width: '100%' },
   vendorLabel: { fontSize: 14, marginBottom: 5 },
-  vendorPrice: { fontSize: 32, fontWeight: 'bold' },
+  vendorPrice: { fontSize: 36, fontWeight: 'bold', letterSpacing: -1 },
   percentageValue: { fontSize: 18, fontWeight: 'bold', marginVertical: 6 },
   sliderRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginTop: 4 },
   slider: { flex: 1, height: 40 },
