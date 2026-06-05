@@ -37,7 +37,7 @@ const APP_LANGUAGES = [
 
 const TRANSLATIONS = {
   en: {
-    title: 'Card Vendor App', singles: '🔍 Singles', sealed: '📦 Sealed', barter: '🤝 Barter',
+    title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Sealed', barter: '🤝 Barter',
     searchPlaceholder: 'Search card name...', search: 'Search', back: '← Back to results',
     backTrade: '← Back to trade', confirmVariant: '⚠ Confirm Print Variant',
     variantSubtitle: 'Price varies significantly by variant', rawCard: 'Raw Card', gradedCard: 'Graded Card',
@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     darkMode: 'Dark Mode', appearance: 'Appearance', noResults: 'No results found.',
   },
   fr: {
-    title: 'App Vendeur Cartes', singles: '🔍 Singles', sealed: '📦 Scellé', barter: '🤝 Échange',
+    title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Scellé', barter: '🤝 Échange',
     searchPlaceholder: 'Rechercher une carte...', search: 'Chercher', back: '← Retour aux résultats',
     backTrade: '← Retour à l\'échange', confirmVariant: '⚠ Confirmer la variante',
     variantSubtitle: 'Le prix varie selon la variante', rawCard: 'Carte brute', gradedCard: 'Carte gradée',
@@ -83,7 +83,7 @@ const TRANSLATIONS = {
     darkMode: 'Mode sombre', appearance: 'Apparence', noResults: 'Aucun résultat.',
   },
   ja: {
-    title: 'カード販売アプリ', singles: '🔍 シングル', sealed: '📦 未開封', barter: '🤝 トレード',
+    title: 'TCG Market Master', singles: '🔍 シングル', sealed: '📦 未開封', barter: '🤝 トレード',
     searchPlaceholder: 'カード名を検索...', search: '検索', back: '← 結果に戻る',
     backTrade: '← トレードに戻る', confirmVariant: '⚠ バリアントを確認',
     variantSubtitle: 'バリアントによって価格が異なります', rawCard: '生カード', gradedCard: 'グレードカード',
@@ -106,7 +106,7 @@ const TRANSLATIONS = {
     darkMode: 'ダークモード', appearance: '外観', noResults: '結果なし。',
   },
   es: {
-    title: 'App Vendedor Cartas', singles: '🔍 Singles', sealed: '📦 Sellado', barter: '🤝 Intercambio',
+    title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Sellado', barter: '🤝 Intercambio',
     searchPlaceholder: 'Buscar carta...', search: 'Buscar', back: '← Volver a resultados',
     backTrade: '← Volver al intercambio', confirmVariant: '⚠ Confirmar variante',
     variantSubtitle: 'El precio varía según la variante', rawCard: 'Carta sin graduar', gradedCard: 'Carta graduada',
@@ -129,7 +129,7 @@ const TRANSLATIONS = {
     darkMode: 'Modo oscuro', appearance: 'Apariencia', noResults: 'Sin resultados.',
   },
   de: {
-    title: 'Karten Händler App', singles: '🔍 Singles', sealed: '📦 Versiegelt', barter: '🤝 Tausch',
+    title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Versiegelt', barter: '🤝 Tausch',
     searchPlaceholder: 'Kartenname suchen...', search: 'Suchen', back: '← Zurück zu Ergebnissen',
     backTrade: '← Zurück zum Tausch', confirmVariant: '⚠ Variante bestätigen',
     variantSubtitle: 'Preis variiert je nach Variante', rawCard: 'Rohe Karte', gradedCard: 'Bewertete Karte',
