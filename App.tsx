@@ -305,6 +305,8 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
   const [sealedConditionIndex, setSealedConditionIndex] = useState(0);
   const [sealedLoading, setSealedLoading] = useState(false);
   const [myDeck, setMyDeck] = useState([]);
+  const [savedTrades, setSavedTrades] = useState([]);
+const [showSavedTrades, setShowSavedTrades] = useState(false);
   const [theirDeck, setTheirDeck] = useState([]);
   const [barterTarget, setBarterTarget] = useState('my');
   const [barterQuery, setBarterQuery] = useState('');
@@ -328,6 +330,7 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
     fetchExchangeRates();
     loadSettings();
     loadRecentSearches();
+    loadSavedTrades();
   }, []);
 
   const loadSettings = async () => {
@@ -411,6 +414,40 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
     return usdPrice * exchangeRates[currencyCode];
   };
 
+  const loadSavedTrades = async () => {
+    try {
+      const val = await AsyncStorage.getItem('saved_trades');
+      if (val) setSavedTrades(JSON.parse(val));
+    } catch (e) {}
+  };
+
+  const saveTrade = async () => {
+    try {
+      const trade = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        myDeck,
+        theirDeck,
+        myTotal,
+        theirTotal,
+        delta,
+        myPercentage,
+        theirPercentage,
+      };
+      const updated = [trade, ...savedTrades].slice(0, 20);
+      setSavedTrades(updated);
+      await AsyncStorage.setItem('saved_trades', JSON.stringify(updated));
+      alert('Trade saved!');
+    } catch (e) {
+      alert('Failed to save trade.');
+    }
+  };
+
+  const deleteSavedTrade = async (id) => {
+    const updated = savedTrades.filter(t => t.id !== id);
+    setSavedTrades(updated);
+    await AsyncStorage.setItem('saved_trades', JSON.stringify(updated));
+  };
   const loadPercentage = async () => {
     try {
       const value = await AsyncStorage.getItem('vendor_percentage');
@@ -524,9 +561,12 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
     else setTheirDeck(prev => prev.filter(e => e.id !== id));
   };
 
-  const getDeckTotal = (deck) => deck.reduce((sum, e) => sum + e.vendorPrice, 0);
-  const myTotal = getDeckTotal(myDeck);
-  const theirTotal = getDeckTotal(theirDeck);
+  const getDeckTotal = (deck, pct) => deck.reduce((sum, e) => {
+    const condMult = CONDITIONS[e.conditionIndex].multiplier;
+    return sum + (e.price * (pct / 100) * condMult);
+  }, 0);
+  const myTotal = getDeckTotal(myDeck, myPercentage);
+  const theirTotal = getDeckTotal(theirDeck, theirPercentage);
   const delta = myTotal - theirTotal;
 
   const selectCard = (card) => {
@@ -859,6 +899,38 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
           <TouchableOpacity style={[styles.clearButton, { borderColor: theme.clearButton }]} onPress={() => { setMyDeck([]); setTheirDeck([]); }}>
             <Text style={[styles.clearButtonText, { color: theme.textMuted }]}>{t.clearTrade}</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.clearButton, { borderColor: theme.accent }]} onPress={saveTrade}>
+            <Text style={[styles.clearButtonText, { color: theme.accent }]}>💾 Save Trade Record</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.clearButton, { borderColor: theme.cardBorder }]} onPress={() => setShowSavedTrades(!showSavedTrades)}>
+            <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>{showSavedTrades ? '▲ Hide Saved Trades' : '▼ View Saved Trades'}</Text>
+          </TouchableOpacity>
+
+          {showSavedTrades && (
+            <View style={{ marginTop: 10 }}>
+              {savedTrades.length === 0 ? (
+                <Text style={{ color: theme.textMuted, textAlign: 'center', marginVertical: 20 }}>No saved trades yet.</Text>
+              ) : (
+                savedTrades.map((trade) => (
+                  <View key={trade.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', marginBottom: 4 }}>{trade.timestamp}</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Your deck: ${trade.myTotal.toFixed(2)} ({trade.myDeck.length} cards)</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Their deck: ${trade.theirTotal.toFixed(2)} ({trade.theirDeck.length} cards)</Text>
+                      <Text style={{ color: trade.delta === 0 ? '#4caf50' : theme.accent, fontWeight: 'bold', marginTop: 4 }}>
+                        {trade.delta === 0 ? '✅ Clean Trade' : trade.delta > 0 ? `They owe $${Math.abs(trade.delta).toFixed(2)}` : `You owe $${Math.abs(trade.delta).toFixed(2)}`}
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => deleteSavedTrade(trade.id)}>
+                      <Text style={{ color: theme.textMuted, fontSize: 18, paddingHorizontal: 8 }}>🗑</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+            </View>
+          )}
         </ScrollView>
       </View>
     );
