@@ -437,6 +437,8 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
     await AsyncStorage.setItem('graded_percentage', String(newPercentage));
   };
 
+  const [loadingProgress, setLoadingProgress] = useState('');
+
   const fetchAllCards = async (searchQuery) => {
     let allCards = [];
     let page = 1;
@@ -445,11 +447,14 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
       const response = await fetch(
         `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(searchQuery)}*&pageSize=250&page=${page}&orderBy=name`
       );
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
       totalCount = data.totalCount || 0;
       allCards = [...allCards, ...(data.data || [])];
+      setLoadingProgress(`Loading ${allCards.length} of ${totalCount} cards...`);
       page++;
     } while (allCards.length < totalCount && page <= 20);
+    setLoadingProgress('');
     return allCards;
   };
 
@@ -971,7 +976,13 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
           )}
 
           {searchError ? (
-            <Text style={[styles.errorText, { color: theme.accent }]}>{searchError}</Text>
+            <View style={{ alignItems: 'center', marginVertical: 40 }}>
+              <Text style={{ fontSize: 40 }}>⚠️</Text>
+              <Text style={[styles.errorText, { color: theme.accent }]}>{searchError}</Text>
+              <TouchableOpacity style={{ marginTop: 12, padding: 10, backgroundColor: theme.accent, borderRadius: 8 }} onPress={() => searchCards()}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Try Again</Text>
+              </TouchableOpacity>
+            </View>
           ) : results.length > 0 && (
             <View style={styles.resultsHeader}>
               <Text style={[styles.resultsCount, { color: theme.textMuted }]}>{results.length} {t.results}</Text>
@@ -988,7 +999,19 @@ const [gradedPercentage, setGradedPercentage] = useState(70);
             </View>
           )}
 
-          {loading && <ActivityIndicator size="large" color={theme.accent} />}
+          {loading && (
+            <View style={{ alignItems: 'center', marginVertical: 20 }}>
+              <ActivityIndicator size="large" color={theme.accent} />
+              {loadingProgress ? <Text style={{ color: theme.textMuted, marginTop: 8, fontSize: 13 }}>{loadingProgress}</Text> : null}
+            </View>
+          )}
+          {!loading && results.length === 0 && !searchError && query.trim() !== '' && (
+            <View style={{ alignItems: 'center', marginVertical: 40 }}>
+              <Text style={{ fontSize: 40 }}>🔍</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 16, marginTop: 10 }}>No cards found for "{query}"</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 13, marginTop: 6 }}>Try a different name or set</Text>
+            </View>
+          )}
           <FlatList
             data={sortedResults}
             keyExtractor={(item) => item.id}
