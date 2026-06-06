@@ -218,7 +218,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', QUICK: 'quick', WISHLIST: 'wishlist' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -331,6 +331,10 @@ const [trendingCards, setTrendingCards] = useState([]);
 const [discoverLoading, setDiscoverLoading] = useState(false);
 
   const [wishlist, setWishlist] = useState([]);
+  const [ownedCards, setOwnedCards] = useState({});
+const [selectedSet, setSelectedSet] = useState(null);
+const [setCards, setSetCards] = useState([]);
+const [setCardsLoading, setSetCardsLoading] = useState(false);
   const [ebayPrices, setEbayPrices] = useState({});
 
   const t = TRANSLATIONS[appLang];
@@ -343,6 +347,7 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
     loadSavedTrades();
     loadWishlist();
     fetchDiscoverData();
+    loadOwnedCards();
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
@@ -493,7 +498,7 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
     setDiscoverLoading(true);
     try {
       // Fetch recent and upcoming sets
-      const setsResponse = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=20');
+      const setsResponse = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=250');
       const setsData = await setsResponse.json();
       setSets(setsData.data || []);
 
@@ -801,6 +806,35 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
     return CGC_GRADES;
   };
 
+  const loadOwnedCards = async () => {
+    try {
+      const val = await AsyncStorage.getItem('owned_cards');
+      if (val) setOwnedCards(JSON.parse(val));
+    } catch (e) {}
+  };
+
+  const toggleOwnedCard = async (cardId) => {
+    const updated = { ...ownedCards, [cardId]: !ownedCards[cardId] };
+    if (!updated[cardId]) delete updated[cardId];
+    setOwnedCards(updated);
+    await AsyncStorage.setItem('owned_cards', JSON.stringify(updated));
+  };
+
+  const fetchSetCards = async (set) => {
+    setSelectedSet(set);
+    setSetCardsLoading(true);
+    setSetCards([]);
+    try {
+      const response = await fetch(
+        `https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&pageSize=250&orderBy=number`
+      );
+      const data = await response.json();
+      setSetCards(data.data || []);
+    } catch (e) {
+      console.error('Set cards fetch error', e);
+    }
+    setSetCardsLoading(false);
+  };
   const shareCard = async (card) => {
     const price = getCardPrice(card);
     const vendorPriceAmt = price ? (price * (percentage / 100)).toFixed(2) : 'N/A';
@@ -926,6 +960,7 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
       { screen: SCREENS.SEALED, icon: '📦', label: 'Sealed', active: screen === SCREENS.SEALED },
       { screen: SCREENS.BARTER, icon: '🤝', label: 'Barter', active: screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH },
       { screen: SCREENS.DISCOVER, icon: '📰', label: 'Discover', active: screen === SCREENS.DISCOVER },
+      { screen: SCREENS.TRACKER, icon: '📋', label: 'Tracker', active: screen === SCREENS.TRACKER },
       { screen: SCREENS.WISHLIST, icon: '⭐', label: 'Wishlist', active: screen === SCREENS.WISHLIST },
     ];
     return (
@@ -1248,6 +1283,89 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
   }
 
  
+  if (screen === SCREENS.TRACKER) {
+    const ownedCount = selectedSet ? setCards.filter(c => ownedCards[c.id]).length : 0;
+    const totalCount = setCards.length;
+    const completion = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        {renderHeader()}
+        {renderTabBar()}
+        {selectedSet ? (
+          <>
+            <TouchableOpacity onPress={() => { setSelectedSet(null); setSetCards([]); }}>
+              <Text style={[styles.back, { color: theme.accent }]}>← Back to Sets</Text>
+            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Image source={{ uri: selectedSet.images?.logo }} style={{ width: 80, height: 32, resizeMode: 'contain', marginRight: 10 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16 }}>{selectedSet.name}</Text>
+                <Text style={{ color: theme.textSecondary, fontSize: 12 }}>{ownedCount} / {totalCount} cards ({completion}%)</Text>
+              </View>
+            </View>
+            <View style={{ height: 8, backgroundColor: theme.cardBorder, borderRadius: 4, marginBottom: 16 }}>
+              <View style={{ height: 8, backgroundColor: theme.accent, borderRadius: 4, width: `${completion}%` }} />
+            </View>
+            {setCardsLoading ? (
+              <ActivityIndicator size="large" color={theme.accent} />
+            ) : (
+              <FlatList
+                data={setCards}
+                keyExtractor={item => item.id}
+                numColumns={3}
+                renderItem={({ item }) => {
+                  const owned = ownedCards[item.id];
+                  return (
+                    <TouchableOpacity
+                      style={{ flex: 1, margin: 4, alignItems: 'center', opacity: owned ? 1 : 0.4 }}
+                      onPress={() => toggleOwnedCard(item.id)}
+                    >
+                      <Image source={{ uri: item.images?.small }} style={{ width: 80, height: 112, borderRadius: 6 }} />
+                      {owned && (
+                        <View style={{ position: 'absolute', top: 4, right: 4, backgroundColor: '#4caf50', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                          <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
+                        </View>
+                      )}
+                      <Text style={{ color: theme.textMuted, fontSize: 9, marginTop: 2 }}>#{item.number}</Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <ScrollView>
+            <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>📋 Set Completion Tracker</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 16 }}>Tap a set to track which cards you own.</Text>
+            {sets.length === 0 ? (
+              <ActivityIndicator size="large" color={theme.accent} />
+            ) : (
+              sets.map((set) => {
+                const owned = setCards.length > 0 && selectedSet?.id === set.id
+                  ? setCards.filter(c => ownedCards[c.id]).length
+                  : Object.keys(ownedCards).filter(id => id.startsWith(set.id)).length;
+                const pct = set.total > 0 ? Math.round((owned / set.total) * 100) : 0;
+                return (
+                  <TouchableOpacity key={set.id} onPress={() => fetchSetCards(set)}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                    <Image source={{ uri: set.images?.symbol }} style={{ width: 32, height: 32, marginRight: 10 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{set.name}</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{set.series} • {set.total} cards • {set.releaseDate}</Text>
+                      <View style={{ height: 4, backgroundColor: theme.cardBorder, borderRadius: 2, marginTop: 4 }}>
+                        <View style={{ height: 4, backgroundColor: pct === 100 ? '#4caf50' : theme.accent, borderRadius: 2, width: `${pct}%` }} />
+                      </View>
+                    </View>
+                    <Text style={{ color: pct === 100 ? '#4caf50' : theme.accent, fontWeight: 'bold', fontSize: 14, marginLeft: 8 }}>{pct}%</Text>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </ScrollView>
+        )}
+      </View>
+    );
+  }
   if (screen === SCREENS.DISCOVER) {
     const today = new Date();
     const upcomingSets = sets.filter(s => new Date(s.releaseDate) > today).reverse();
