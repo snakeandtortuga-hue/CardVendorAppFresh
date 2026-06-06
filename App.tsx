@@ -328,12 +328,7 @@ const searchSuggestTimeout = useRef(null);
   const [sets, setSets] = useState([]);
 const [trendingCards, setTrendingCards] = useState([]);
 const [discoverLoading, setDiscoverLoading] = useState(false);
-const [quickQuery, setQuickQuery] = useState('');
-const [quickCard, setQuickCard] = useState(null);
-const [quickLoading, setQuickLoading] = useState(false);
-const [quickSuggestions, setQuickSuggestions] = useState([]);
-const [showSuggestions, setShowSuggestions] = useState(false);
-const quickSuggestTimeout = useRef(null);
+
   const [wishlist, setWishlist] = useState([]);
   const [ebayPrices, setEbayPrices] = useState({});
 
@@ -456,129 +451,7 @@ const quickSuggestTimeout = useRef(null);
     } catch (e) {}
   };
 
-  const handleQuickQueryChange = (text) => {
-    setQuickQuery(text);
-    if (quickSuggestTimeout.current) clearTimeout(quickSuggestTimeout.current);
-    if (text.trim().length >= 2) {
-      quickSuggestTimeout.current = setTimeout(() => {
-        fetchQuickSuggestions(text);
-      }, 500);
-    } else {
-      setQuickSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-  const quickSearch = async () => {
-    if (!quickQuery.trim()) return;
-    setQuickLoading(true);
-    setQuickCard(null);
-    try {
-      // Clean query - handle subtypes like M, EX, GX, V, VMAX, VSTAR, Full Art etc
-      const subtypes = ['full art', 'vstar', 'vmax', 'mega', ' ex', ' gx', ' v ', ' v$'];
-      let cleanName = quickQuery.trim();
-      // Remove leading M (Mega) prefix
-      if (/^m /i.test(cleanName)) cleanName = cleanName.slice(2);
-      // Build query with subtype handling
-      // Parse the query into components
-      const words = cleanName.split(' ');
-      const setKeywords = ['base', 'jungle', 'fossil', 'rocket', 'gym', 'neo', 'aquapolis', 'skyridge', 'ruby', 'sapphire', 'emerald', 'firered', 'leafgreen', 'deoxys', 'unseen', 'forces', 'delta', 'legend', 'heartgold', 'soulsilver', 'unleashed', 'undaunted', 'triumphant', 'call', 'legends', 'black', 'white', 'emerging', 'noble', 'victories', 'next', 'destinies', 'dark', 'explorers', 'dragons', 'exalted', 'boundaries', 'crossed', 'plasma', 'storm', 'freeze', 'blast', 'legendary', 'treasures', 'xy', 'flashfire', 'furious', 'fists', 'phantom', 'forces', 'primal', 'clash', 'roaring', 'skies', 'ancient', 'origins', 'breakthrough', 'breakpoint', 'fates', 'collide', 'generations', 'steam', 'siege', 'evolutions', 'sun', 'moon', 'guardians', 'rising', 'burning', 'shadows', 'shining', 'crimson', 'invasion', 'ultra', 'prism', 'forbidden', 'light', 'celestial', 'storm', 'dragon', 'majesty', 'lost', 'thunder', 'team', 'up', 'detective', 'pikachu', 'unbroken', 'bonds', 'unified', 'minds', 'hidden', 'fates', 'cosmic', 'eclipse', 'rebel', 'clash', 'darkness', 'ablaze', 'vivid', 'voltage', 'shining', 'fates', 'battle', 'styles', 'chilling', 'reign', 'evolving', 'skies', 'celebrations', 'fusion', 'strike', 'brilliant', 'stars', 'astral', 'radiance', 'pokemon', 'go', 'lost', 'origin', 'silver', 'tempest', 'crown', 'zenith', 'scarlet', 'violet', 'paldea', 'evolved', 'obsidian', 'flames', 'paradox', 'rift', 'paldean', 'fates', 'temporal', 'forces', 'twilight', 'masquerade', 'shrouded', 'fable', 'stellar', 'surging', 'sparks', 'promo'];
-      const subtypeWords = ['ex', 'gx', 'v', 'vmax', 'vstar', 'mega', 'break', 'lv', 'lvx', 'tag', 'radiant', 'ace'];
-      
-      // Extract card number if present (e.g. "154" or "154/172")
-      const numberMatch = cleanName.match(/\b(\d+\/?\d*)\b/);
-      const cardNumber = numberMatch ? numberMatch[1] : null;
-
-      // Extract set name words
-      const setWords = words.filter(w => setKeywords.includes(w.toLowerCase()));
-      
-      // Extract pure card name (remove set words, subtype words, numbers)
-      const nameWords = words.filter(w => 
-        !setKeywords.includes(w.toLowerCase()) && 
-        !subtypeWords.includes(w.toLowerCase()) &&
-        !/^\d/.test(w)
-      );
-
-      // Build API query
-      let apiQuery = `name:*${encodeURIComponent(nameWords.join(' '))}*`;
-      if (setWords.length > 0) {
-        apiQuery += ` set.name:*${encodeURIComponent(setWords.join(' '))}*`;
-      }
-      if (cardNumber) {
-        apiQuery += ` number:${cardNumber.split('/')[0]}`;
-      }
-
-      const response = await fetch(
-        `https://api.pokemontcg.io/v2/cards?q=${apiQuery}&pageSize=20&orderBy=-tcgplayer.prices.holofoil.market`
-      );
-      const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        if (data.data && data.data.length > 0) {
-        const query = quickQuery.toLowerCase();
-        const isEX = /\bex\b/i.test(query);
-        const isGX = /\bgx\b/i.test(query);
-        const isVMAX = /\bvmax\b/i.test(query);
-        const isVSTAR = /\bvstar\b/i.test(query);
-        const isV = /\bv\b/i.test(query) && !isVMAX && !isVSTAR;
-        const isMega = /^m\s|\bmega\b/i.test(query);
-        const isFullArt = /full.?art/i.test(query);
-        const isIllustrationRare = /illustration.?rare|sir/i.test(query);
-        const isSpecialIllustration = /special.?illustration|sar/i.test(query);
-        const isPrism = /prism.?star|◇/i.test(query);
-        const isStar = /\bstar\b/i.test(query);
-        const isShiny = /shiny/i.test(query);
-        const isRadiant = /radiant/i.test(query);
-        const isAlt = /alt.?art|alternate/i.test(query);
-        const isGold = /\bgold\b/i.test(query);
-        const isRainbow = /rainbow/i.test(query);
-        const isSecret = /secret/i.test(query);
-        const isHolo = /\bholo\b/i.test(query);
-        const isReverse = /reverse/i.test(query);
-        const isFirstEd = /1st|first.?edition/i.test(query);
-        const isShadowless = /shadowless/i.test(query);
-        const isBreak = /\bbreak\b/i.test(query);
-        const isLVX = /lv\.?x|level.?x/i.test(query);
-        const isTAG = /tag.?team|&/i.test(query);
-        const isACE = /ace.?spec/i.test(query);
-
-        let best = data.data[0];
-        for (const card of data.data) {
-          const subtypes = card.subtypes?.map(s => s.toLowerCase()) || [];
-          const rarity = card.rarity?.toLowerCase() || '';
-          const name = card.name?.toLowerCase() || '';
-          if (isEX && subtypes.includes('ex')) { best = card; break; }
-          if (isGX && subtypes.includes('gx')) { best = card; break; }
-          if (isVMAX && subtypes.includes('vmax')) { best = card; break; }
-          if (isVSTAR && subtypes.includes('vstar')) { best = card; break; }
-          if (isV && subtypes.includes('v')) { best = card; break; }
-          if (isMega && subtypes.includes('mega')) { best = card; break; }
-          if (isBreak && subtypes.includes('break')) { best = card; break; }
-          if (isLVX && subtypes.includes('level-up')) { best = card; break; }
-          if (isTAG && subtypes.includes('tag team')) { best = card; break; }
-          if (isACE && subtypes.includes('ace spec')) { best = card; break; }
-          if (isFullArt && rarity.includes('full art')) { best = card; break; }
-          if (isIllustrationRare && rarity.includes('illustration rare')) { best = card; break; }
-          if (isSpecialIllustration && rarity.includes('special illustration rare')) { best = card; break; }
-          if (isPrism && rarity.includes('prism star')) { best = card; break; }
-          if (isStar && rarity.includes('star')) { best = card; break; }
-          if (isShiny && (rarity.includes('shiny') || name.includes('shiny'))) { best = card; break; }
-          if (isRadiant && subtypes.includes('radiant')) { best = card; break; }
-          if (isAlt && rarity.includes('alternate')) { best = card; break; }
-          if (isGold && rarity.includes('gold')) { best = card; break; }
-          if (isRainbow && rarity.includes('rainbow')) { best = card; break; }
-          if (isSecret && rarity.includes('secret')) { best = card; break; }
-          if (isHolo && rarity.includes('holo')) { best = card; break; }
-          if (isReverse && subtypes.includes('reverse holo')) { best = card; break; }
-          if (isFirstEd && card.number?.includes('1')) { best = card; break; }
-          if (isShadowless && name.includes('shadowless')) { best = card; break; }
-        }
-        setQuickCard(best);
-      }
-      }
-    } catch (e) {
-      console.error('Quick search error', e);
-    }
-    setQuickLoading(false);
-  };
+ 
   const fetchSearchSuggestions = async (text) => {
     if (!text || text.trim().length < 1) {
       setSearchSuggestions([]);
@@ -764,8 +637,7 @@ const quickSuggestTimeout = useRef(null);
 
  const fetchAllCards = async (searchQuery) => {
     // Clean query - remove characters that break the API query syntax
-    // Clean query for API - keep hyphens and letters only for reliable results
-    const cleanQuery = searchQuery.replace(/[^\w\s\-]/g, ' ').replace(/\s+/g, ' ').trim();
+    const cleanQuery = searchQuery.replace(/[":!@#$%^&*()+=\[\]{}|\\<>?]/g, ' ').replace(/\s+/g, ' ').trim();
     // Fetch first page immediately and show results, then load rest in background
     const firstResponse = await fetch(
       `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(cleanQuery)}*&pageSize=250&page=1&orderBy=name`
@@ -1362,94 +1234,7 @@ const quickSuggestTimeout = useRef(null);
     );
   }
 
-  if (screen === SCREENS.QUICK) {
-    const quickPrice = quickCard ? (quickCard.tcgplayer?.prices?.holofoil?.market || quickCard.tcgplayer?.prices?.normal?.market || quickCard.tcgplayer?.prices?.reverseHolofoil?.market || 0) : 0;
-    const quickVendorPrice = quickPrice * (percentage / 100);
-    return (
-      <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
-        <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)}>
-          <Text style={[styles.back, { color: theme.accent }]}>← Back</Text>
-        </TouchableOpacity>
-        <View style={{ alignItems: 'center', paddingTop: 10 }}>
-          <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 20 }}>⚡ Quick Price</Text>
-          <View style={[styles.searchRow, { width: '100%' }]}>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.input, borderColor: theme.inputBorder, color: theme.text, fontSize: 18 }]}
-              placeholder="e.g. M Charizard EX Flashfire 107"
-              placeholderTextColor={theme.textMuted}
-              value={quickQuery}
-              onChangeText={handleQuickQueryChange}
-              onSubmitEditing={quickSearch}
-              returnKeyType="search"
-              autoFocus
-            />
-            <TouchableOpacity style={[styles.button, { backgroundColor: theme.accent, paddingHorizontal: 20 }]} onPress={() => { setShowSuggestions(false); quickSearch(); }}>
-              <Text style={styles.buttonText}>Go</Text>
-            </TouchableOpacity>
-          </View>
-
-          {showSuggestions && quickSuggestions.length > 0 && (
-            <View style={{ width: '100%', backgroundColor: theme.card, borderRadius: 10, borderWidth: 1, borderColor: theme.cardBorder, marginTop: 4, zIndex: 100 }}>
-              {quickSuggestions.map((suggestion) => (
-                <TouchableOpacity
-                  key={suggestion.id}
-                  style={{ flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomWidth: 1, borderBottomColor: theme.cardBorder }}
-                  onPress={() => {
-                    setQuickQuery(suggestion.name);
-                    setShowSuggestions(false);
-                    setQuickCard(suggestion);
-                  }}
-                >
-                  <Image source={{ uri: suggestion.images?.small }} style={{ width: 30, height: 42, borderRadius: 3, marginRight: 10 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{suggestion.name}</Text>
-                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{suggestion.set?.name} — #{suggestion.number}</Text>
-                  </View>
-                  {(suggestion.tcgplayer?.prices?.holofoil?.market || suggestion.tcgplayer?.prices?.normal?.market) && (
-                    <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>
-                      ${(suggestion.tcgplayer?.prices?.holofoil?.market || suggestion.tcgplayer?.prices?.normal?.market || 0).toFixed(2)}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {quickLoading && <ActivityIndicator size="large" color={theme.accent} style={{ marginTop: 40 }} />}
-
-          {quickCard && !quickLoading && (
-            <View style={{ alignItems: 'center', width: '100%', marginTop: 20 }}>
-              <Image source={{ uri: quickCard.images?.large }} style={{ width: 180, height: 250, borderRadius: 12, marginBottom: 20 }} />
-              <Text style={{ color: theme.text, fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}>{quickCard.name}</Text>
-              <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 24 }}>{quickCard.set?.name} — #{quickCard.number}</Text>
-
-              <View style={{ width: '100%', backgroundColor: theme.priceBox, borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16 }}>
-                <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 4 }}>Market Price</Text>
-                <Text style={{ color: theme.text, fontSize: 52, fontWeight: 'bold', letterSpacing: -2 }}>${quickPrice.toFixed(2)}</Text>
-              </View>
-
-              <View style={{ width: '100%', backgroundColor: theme.accentLight, borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 24 }}>
-                <Text style={{ color: theme.accent, fontSize: 14, marginBottom: 4 }}>Your Price ({percentage}%)</Text>
-                <Text style={{ color: theme.accent, fontSize: 52, fontWeight: 'bold', letterSpacing: -2 }}>${quickVendorPrice.toFixed(2)}</Text>
-              </View>
-
-              <TouchableOpacity style={{ padding: 14, backgroundColor: theme.accent, borderRadius: 12, width: '100%', alignItems: 'center' }} onPress={() => { selectCard(quickCard); setScreen(SCREENS.CARD); }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>View Full Details →</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {!quickCard && !quickLoading && quickQuery.trim() !== '' && (
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Text style={{ fontSize: 40 }}>🔍</Text>
-              <Text style={{ color: theme.textMuted, fontSize: 16, marginTop: 10 }}>No card found</Text>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  }
+ 
   if (screen === SCREENS.DISCOVER) {
     const today = new Date();
     const upcomingSets = sets.filter(s => new Date(s.releaseDate) > today).reverse();
@@ -1810,12 +1595,7 @@ const quickSuggestTimeout = useRef(null);
           {results.length === 0 && !loading && !searchError && query.trim() === '' && (
             <View style={{ alignItems: 'center', paddingTop: 40, paddingHorizontal: 20 }}>
               <Text style={{ fontSize: 60, marginBottom: 16 }}>🃏</Text>
-              <TouchableOpacity
-                style={{ backgroundColor: theme.accent, paddingHorizontal: 32, paddingVertical: 14, borderRadius: 14, marginBottom: 20 }}
-                onPress={() => { setQuickQuery(''); setQuickCard(null); setScreen(SCREENS.QUICK); }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>⚡ Quick Price Check</Text>
-              </TouchableOpacity>
+              
               <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 8, textAlign: 'center' }}>Welcome to TCG Market Master</Text>
               <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 30, lineHeight: 22 }}>Search any card, check live prices, evaluate trades and manage your barter sessions.</Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 30 }}>
