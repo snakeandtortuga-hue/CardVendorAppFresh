@@ -321,6 +321,9 @@ const [showSavedTrades, setShowSavedTrades] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const [priceHistory, setPriceHistory] = useState([]);
   const [searchError, setSearchError] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+const searchSuggestTimeout = useRef(null);
   const searchCache = useRef({});
   const [sets, setSets] = useState([]);
 const [trendingCards, setTrendingCards] = useState([]);
@@ -343,6 +346,17 @@ const quickSuggestTimeout = useRef(null);
     loadSavedTrades();
     fetchDiscoverData();
   }, []);
+  useEffect(() => {
+    if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
+    if (query.trim().length >= 1) {
+      searchSuggestTimeout.current = setTimeout(() => {
+        fetchSearchSuggestions(query);
+      }, 300);
+    } else {
+      setSearchSuggestions([]);
+      setShowSearchSuggestions(false);
+    }
+  }, [query]);
 
   const loadSettings = async () => {
     try {
@@ -562,6 +576,42 @@ const quickSuggestTimeout = useRef(null);
       console.error('Quick search error', e);
     }
     setQuickLoading(false);
+  };
+  const fetchSearchSuggestions = async (text) => {
+    if (!text || text.trim().length < 1) {
+      setSearchSuggestions([]);
+      setShowSearchSuggestions(false);
+      return;
+    }
+    try {
+      const searchText = text.trim();
+      const lower = searchText.toLowerCase();
+      const querySet = new Set();
+      querySet.add(`name:*${encodeURIComponent(searchText)}*`);
+      if (lower.startsWith('mega') || lower.startsWith('mega ')) {
+        querySet.add(`name:*${encodeURIComponent('M ' + searchText.replace(/^mega\s*/i, ''))}*`);
+      }
+      if (/^m\s/i.test(searchText)) {
+        const withoutM = searchText.replace(/^m\s+/i, '');
+        querySet.add(`name:M*${encodeURIComponent(withoutM)}*`);
+      }
+      const allCards = [];
+      const seenIds = new Set();
+      for (const q of querySet) {
+        const res = await fetch(`https://api.pokemontcg.io/v2/cards?q=${q}&pageSize=8&orderBy=name`);
+        const data = await res.json();
+        for (const card of (data.data || [])) {
+          if (!seenIds.has(card.id)) { seenIds.add(card.id); allCards.push(card); }
+        }
+      }
+      if (allCards.length > 0) {
+        setSearchSuggestions(allCards.slice(0, 12));
+        setShowSearchSuggestions(true);
+      } else {
+        setSearchSuggestions([]);
+        setShowSearchSuggestions(false);
+      }
+    } catch (e) {}
   };
   const fetchDiscoverData = async () => {
     setDiscoverLoading(true);
@@ -1536,6 +1586,36 @@ const quickSuggestTimeout = useRef(null);
             </View>
           )}
           {listening && <Text style={[styles.listeningText, { color: theme.accent }]}>{t.listening}</Text>}
+
+          {showSearchSuggestions && searchSuggestions.length > 0 && (
+            <View style={{ width: '100%', backgroundColor: theme.card, borderRadius: 10, borderWidth: 1, borderColor: theme.cardBorder, marginBottom: 8, maxHeight: 300 }}>
+              <ScrollView nestedScrollEnabled={true} keyboardShouldPersistTaps="handled">
+              {searchSuggestions.map((suggestion) => {
+                const price = suggestion.tcgplayer?.prices?.holofoil?.market || suggestion.tcgplayer?.prices?.normal?.market || 0;
+                return (
+                  <TouchableOpacity
+                    key={suggestion.id}
+                    style={{ flexDirection: 'row', alignItems: 'center', padding: 10, borderBottomWidth: 1, borderBottomColor: theme.cardBorder }}
+                    onPress={() => {
+                      setQuery(suggestion.name);
+                      setShowSearchSuggestions(false);
+                      searchCards(suggestion.name);
+                    }}
+                  >
+                    <Image source={{ uri: suggestion.images?.small }} style={{ width: 30, height: 42, borderRadius: 3, marginRight: 10 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{suggestion.name}</Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{suggestion.set?.name} — #{suggestion.number} — {suggestion.rarity}</Text>
+                    </View>
+                    {price > 0 && (
+                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>${price.toFixed(2)}</Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+              </ScrollView>
+            </View>
+          )}
 
           {results.length === 0 && !loading && !searchError && query.trim() === '' && (
             <View style={{ alignItems: 'center', paddingTop: 40, paddingHorizontal: 20 }}>
