@@ -217,7 +217,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', QUICK: 'quick' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', QUICK: 'quick', WISHLIST: 'wishlist' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -334,6 +334,7 @@ const [quickLoading, setQuickLoading] = useState(false);
 const [quickSuggestions, setQuickSuggestions] = useState([]);
 const [showSuggestions, setShowSuggestions] = useState(false);
 const quickSuggestTimeout = useRef(null);
+  const [wishlist, setWishlist] = useState([]);
   const [ebayPrices, setEbayPrices] = useState({});
 
   const t = TRANSLATIONS[appLang];
@@ -344,6 +345,7 @@ const quickSuggestTimeout = useRef(null);
     loadSettings();
     loadRecentSearches();
     loadSavedTrades();
+    loadWishlist();
     fetchDiscoverData();
   }, []);
   useEffect(() => {
@@ -665,6 +667,73 @@ const quickSuggestTimeout = useRef(null);
     setSavedTrades(updated);
     await AsyncStorage.setItem('saved_trades', JSON.stringify(updated));
   };
+  const loadWishlist = async () => {
+    try {
+      const val = await AsyncStorage.getItem('wishlist');
+      if (val) setWishlist(JSON.parse(val));
+    } catch (e) {}
+  };
+
+  const saveWishlistToStorage = async (newList) => {
+    try {
+      await AsyncStorage.setItem('wishlist', JSON.stringify(newList));
+    } catch (e) {}
+  };
+
+  const addToWishlist = (item) => {
+    const id = `wish_${item.id || item.name}_${Date.now()}`;
+    const entry = {
+      id,
+      itemId: item.id || null,
+      name: item.name,
+      image: item.images?.small || item.images?.large || null,
+      setName: item.set?.name || item.type || '',
+      number: item.number || '',
+      currentPrice: getCardPrice(item) || 0,
+      targetPrice: '',
+      quantity: 1,
+      isSealed: !item.id,
+      addedAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...wishlist];
+    setWishlist(updated);
+    saveWishlistToStorage(updated);
+    alert('\u2705 Added to Wishlist!');
+  };
+
+  const addSealedToWishlist = (product) => {
+    const id = `wish_sealed_${Date.now()}`;
+    const entry = {
+      id,
+      itemId: null,
+      name: product.name,
+      image: null,
+      setName: product.type || 'Sealed Product',
+      number: '',
+      currentPrice: 0,
+      targetPrice: '',
+      quantity: 1,
+      isSealed: true,
+      addedAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...wishlist];
+    setWishlist(updated);
+    saveWishlistToStorage(updated);
+    alert('\u2705 Added to Wishlist!');
+  };
+
+  const removeFromWishlist = (id) => {
+    const updated = wishlist.filter(w => w.id !== id);
+    setWishlist(updated);
+    saveWishlistToStorage(updated);
+  };
+
+  const updateWishlistItem = (id, field, value) => {
+    const updated = wishlist.map(w => w.id === id ? { ...w, [field]: value } : w);
+    setWishlist(updated);
+    saveWishlistToStorage(updated);
+  };
+
   const loadPercentage = async () => {
     try {
       const value = await AsyncStorage.getItem('vendor_percentage');
@@ -694,9 +763,12 @@ const quickSuggestTimeout = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState('');
 
  const fetchAllCards = async (searchQuery) => {
+    // Clean query - remove characters that break the API query syntax
+    // Clean query for API - keep hyphens and letters only for reliable results
+    const cleanQuery = searchQuery.replace(/[^\w\s\-]/g, ' ').replace(/\s+/g, ' ').trim();
     // Fetch first page immediately and show results, then load rest in background
     const firstResponse = await fetch(
-      `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(searchQuery)}*&pageSize=250&page=1&orderBy=name`
+      `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(cleanQuery)}*&pageSize=250&page=1&orderBy=name`
     );
     if (!firstResponse.ok) throw new Error(`API error: ${firstResponse.status}`);
     const firstData = await firstResponse.json();
@@ -751,6 +823,7 @@ const quickSuggestTimeout = useRef(null);
       if (allCards.length === 0) setSearchError(t.noResults);
       await saveRecentSearch(q.trim());
     } catch (error) {
+      console.error('Search error:', error);
       setSearchError('Search failed. Please check your connection.');
     }
     setLoading(false);
@@ -968,6 +1041,7 @@ const quickSuggestTimeout = useRef(null);
       { screen: SCREENS.SEALED, icon: '📦', label: 'Sealed', active: screen === SCREENS.SEALED },
       { screen: SCREENS.BARTER, icon: '🤝', label: 'Barter', active: screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH },
       { screen: SCREENS.DISCOVER, icon: '📰', label: 'Discover', active: screen === SCREENS.DISCOVER },
+      { screen: SCREENS.WISHLIST, icon: '⭐', label: 'Wishlist', active: screen === SCREENS.WISHLIST },
     ];
     return (
       <View style={{ flexDirection: 'row', marginBottom: 15, backgroundColor: theme.tabBg, borderRadius: 16, padding: 4, borderWidth: 1, borderColor: theme.cardBorder }}>
@@ -1491,6 +1565,115 @@ const quickSuggestTimeout = useRef(null);
       </View>
     );
   }
+  if (screen === SCREENS.WISHLIST) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        {renderHeader()}
+        {renderTabBar()}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, flex: 1 }}>⭐ Wishlist</Text>
+          <Text style={{ color: theme.textMuted, fontSize: 13 }}>{wishlist.length} item{wishlist.length !== 1 ? 's' : ''}</Text>
+        </View>
+        {wishlist.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingTop: 60 }}>
+            <Text style={{ fontSize: 60, marginBottom: 16 }}>⭐</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.text, marginBottom: 8 }}>Your wishlist is empty</Text>
+            <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center' }}>Search for cards or sealed products and tap "Add to Wishlist" to save them here.</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={wishlist}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder, flexDirection: 'column', padding: 12 }]}>
+                {/* Top row: image + name + delete */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                  {item.image ? (
+                    <Image source={{ uri: item.image }} style={{ width: 52, height: 72, borderRadius: 4 }} />
+                  ) : (
+                    <View style={{ width: 52, height: 72, borderRadius: 4, backgroundColor: theme.chip, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 24 }}>📦</Text>
+                    </View>
+                  )}
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15 }} numberOfLines={2}>{item.name}</Text>
+                    <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{item.setName}{item.number ? ` — #${item.number}` : ''}</Text>
+                    {item.isSealed && (
+                      <View style={{ marginTop: 4, backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start' }}>
+                        <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: 'bold' }}>📦 Sealed</Text>
+                      </View>
+                    )}
+                  </View>
+                  {/* Red minus/delete button */}
+                  <TouchableOpacity
+                    onPress={() => removeFromWishlist(item.id)}
+                    style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#e63946', alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 20, lineHeight: 22, fontWeight: 'bold' }}>−</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Bottom row: quantity + prices */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  {/* Quantity counter */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, borderRadius: 8, overflow: 'hidden' }}>
+                    <TouchableOpacity
+                      onPress={() => { if (item.quantity > 1) updateWishlistItem(item.id, 'quantity', item.quantity - 1); }}
+                      style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+                    >
+                      <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold' }}>−</Text>
+                    </TouchableOpacity>
+                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15, paddingHorizontal: 6, minWidth: 24, textAlign: 'center' }}>{item.quantity}</Text>
+                    <TouchableOpacity
+                      onPress={() => updateWishlistItem(item.id, 'quantity', item.quantity + 1)}
+                      style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+                    >
+                      <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold' }}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Current market price */}
+                  {item.currentPrice > 0 && (
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ color: theme.textMuted, fontSize: 10 }}>Market</Text>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>${item.currentPrice.toFixed(2)}</Text>
+                    </View>
+                  )}
+
+                  {/* Target price input */}
+                  <View style={{ flex: 1, minWidth: 100 }}>
+                    <Text style={{ color: theme.textMuted, fontSize: 10, marginBottom: 2 }}>Target Price ($)</Text>
+                    <TextInput
+                      style={{ borderWidth: 1, borderColor: item.targetPrice && item.currentPrice && parseFloat(item.targetPrice) >= item.currentPrice ? '#e63946' : '#4caf50', borderRadius: 6, padding: 6, color: theme.text, backgroundColor: theme.input, fontSize: 14, fontWeight: 'bold' }}
+                      placeholder="0.00"
+                      placeholderTextColor={theme.textMuted}
+                      keyboardType="decimal-pad"
+                      value={String(item.targetPrice)}
+                      onChangeText={(val) => updateWishlistItem(item.id, 'targetPrice', val)}
+                    />
+                  </View>
+
+                  {/* Price vs target indicator */}
+                  {item.targetPrice && item.currentPrice > 0 && (
+                    <View style={{ alignItems: 'center' }}>
+                      {parseFloat(item.targetPrice) >= item.currentPrice ? (
+                        <Text style={{ color: '#4caf50', fontSize: 13, fontWeight: 'bold' }}>✅ At target</Text>
+                      ) : (
+                        <Text style={{ color: '#e63946', fontSize: 13, fontWeight: 'bold' }}>
+                          ${(item.currentPrice - parseFloat(item.targetPrice)).toFixed(2)} above
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+          />
+        )}
+      </View>
+    );
+  }
+
   if (screen === SCREENS.SEALED) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -1532,6 +1715,13 @@ const quickSuggestTimeout = useRef(null);
                 <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>{t.marketPrice}</Text>
                 <Text style={[styles.noPrice, { color: theme.textMuted }]}>{sealedProduct.note}</Text>
               </View>
+              <TouchableOpacity
+                style={{ marginTop: 14, padding: 14, backgroundColor: '#e63946', borderRadius: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}
+                onPress={() => addSealedToWishlist(sealedProduct)}
+              >
+                <Text style={{ fontSize: 18 }}>⭐</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Add to Wishlist</Text>
+              </TouchableOpacity>
             </View>
           )}
         </ScrollView>
@@ -1599,7 +1789,7 @@ const quickSuggestTimeout = useRef(null);
                     onPress={() => {
                       setQuery(suggestion.name);
                       setShowSearchSuggestions(false);
-                      searchCards(suggestion.name);
+                      selectCard(suggestion);
                     }}
                   >
                     <Image source={{ uri: suggestion.images?.small }} style={{ width: 30, height: 42, borderRadius: 3, marginRight: 10 }} />
@@ -1869,6 +2059,14 @@ const quickSuggestTimeout = useRef(null);
                 </TouchableOpacity>
               ))}
             </View>
+
+            <TouchableOpacity
+              style={{ marginTop: 20, marginBottom: 10, padding: 14, backgroundColor: '#e63946', borderRadius: 12, width: '100%', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}
+              onPress={() => addToWishlist(selectedCard)}
+            >
+              <Text style={{ fontSize: 18 }}>⭐</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Add to Wishlist</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       )}
