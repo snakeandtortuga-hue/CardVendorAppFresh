@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet, A
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as Clipboard from 'expo-clipboard';
 import Slider from '@react-native-community/slider';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -800,6 +801,18 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
     return CGC_GRADES;
   };
 
+  const shareCard = async (card) => {
+    const price = getCardPrice(card);
+    const vendorPriceAmt = price ? (price * (percentage / 100)).toFixed(2) : 'N/A';
+    const marketPrice = price ? `$${price.toFixed(2)}` : 'N/A';
+    const shareText = `🃏 ${card.name}\n📦 ${card.set?.name} — #${card.number}\n💰 Market Price: ${marketPrice}\n🏷️ Vendor Price: $${vendorPriceAmt}\n\nPriced with TCG Market Master`;
+    try {
+      await Clipboard.setStringAsync(shareText);
+      alert('Card info copied to clipboard! Paste it anywhere to share.');
+    } catch (e) {
+      console.error('Share error', e);
+    }
+  };
   const getEbayToken = async () => {
     try {
       const clientId = process.env.EXPO_PUBLIC_EBAY_CLIENT_ID;
@@ -1703,6 +1716,13 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
             <Image source={{ uri: selectedCard.images.large }} style={styles.largeImage} />
             <Text style={[styles.cardName, { color: theme.text }]}>{selectedCard.name}</Text>
             <Text style={[styles.cardSet, { color: theme.textSecondary }]}>{selectedCard.set.name} — #{selectedCard.number}</Text>
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginTop: 10 }}
+                onPress={() => shareCard(selectedCard)}
+              >
+                <Text style={{ fontSize: 16, marginRight: 6 }}>📤</Text>
+                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>Share Price</Text>
+              </TouchableOpacity>
 
             {priceHistory.length > 1 && (
               <View style={[styles.priceHistoryBox, { backgroundColor: theme.priceBox }]}>
