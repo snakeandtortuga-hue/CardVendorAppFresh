@@ -218,7 +218,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker', LOGS: 'logs' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -332,6 +332,14 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
 
   const [wishlist, setWishlist] = useState([]);
   const [ownedCards, setOwnedCards] = useState({});
+  const [purchaseLogs, setPurchaseLogs] = useState([]);
+  const [expandedLog, setExpandedLog] = useState(null);
+const [showAddLog, setShowAddLog] = useState(false);
+const [logCard, setLogCard] = useState(null);
+const [logPrice, setLogPrice] = useState('');
+const [logCondition, setLogCondition] = useState('NM');
+const [logSource, setLogSource] = useState('Bought');
+const [logNotes, setLogNotes] = useState('');
 const [selectedSet, setSelectedSet] = useState(null);
 const [setCards, setSetCards] = useState([]);
 const [setCardsLoading, setSetCardsLoading] = useState(false);
@@ -348,6 +356,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     loadWishlist();
     fetchDiscoverData();
     loadOwnedCards();
+    loadPurchaseLogs();
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
@@ -521,8 +530,9 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
 
   const saveTrade = async () => {
     try {
+      const tradeId = Date.now();
       const trade = {
-        id: Date.now(),
+        id: tradeId,
         timestamp: new Date().toLocaleString(),
         myDeck,
         theirDeck,
@@ -535,7 +545,44 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       const updated = [trade, ...savedTrades].slice(0, 20);
       setSavedTrades(updated);
       await AsyncStorage.setItem('saved_trades', JSON.stringify(updated));
-      alert('Trade saved!');
+
+      // Create a grouped trade log entry
+      const newOwned = { ...ownedCards };
+      const tradeLog = {
+        id: tradeId,
+        type: 'trade',
+        timestamp: new Date().toLocaleString(),
+        date: new Date().toLocaleDateString(),
+        delta,
+        given: myDeck.map(entry => ({
+          id: entry.card.id,
+          name: entry.card.name,
+          set: entry.card.set?.name,
+          number: entry.card.number,
+          image: entry.card.images?.small,
+          price: entry.price || 0,
+          condition: entry.condition,
+        })),
+        received: theirDeck.map(entry => {
+          newOwned[entry.card.id] = true;
+          return {
+            id: entry.card.id,
+            name: entry.card.name,
+            set: entry.card.set?.name,
+            number: entry.card.number,
+            image: entry.card.images?.small,
+            price: entry.price || 0,
+            condition: entry.condition,
+          };
+        }),
+      };
+
+      const updatedLogs = [tradeLog, ...purchaseLogs];
+      setPurchaseLogs(updatedLogs);
+      await AsyncStorage.setItem('purchase_logs', JSON.stringify(updatedLogs));
+      setOwnedCards(newOwned);
+      await AsyncStorage.setItem('owned_cards', JSON.stringify(newOwned));
+      alert(`✅ Trade saved and logged! ${myDeck.length + theirDeck.length} items recorded.`);
     } catch (e) {
       alert('Failed to save trade.');
     }
@@ -806,6 +853,45 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     return CGC_GRADES;
   };
 
+  const loadPurchaseLogs = async () => {
+    try {
+      const val = await AsyncStorage.getItem('purchase_logs');
+      if (val) setPurchaseLogs(JSON.parse(val));
+    } catch (e) {}
+  };
+
+  const addPurchaseLog = async (card, price, condition, source, notes) => {
+    const log = {
+      id: Date.now(),
+      type: 'purchase',
+      timestamp: new Date().toLocaleString(),
+      date: new Date().toLocaleDateString(),
+      source,
+      notes,
+      items: [{
+        id: card.id,
+        name: card.name,
+        set: card.set?.name,
+        number: card.number,
+        image: card.images?.small,
+        price: parseFloat(price) || 0,
+        condition,
+      }],
+    };
+    const updated = [log, ...purchaseLogs];
+    setPurchaseLogs(updated);
+    await AsyncStorage.setItem('purchase_logs', JSON.stringify(updated));
+    const updatedOwned = { ...ownedCards, [card.id]: true };
+    setOwnedCards(updatedOwned);
+    await AsyncStorage.setItem('owned_cards', JSON.stringify(updatedOwned));
+    alert('✅ Purchase logged and card marked as owned!');
+  };
+
+  const deletePurchaseLog = async (id) => {
+    const updated = purchaseLogs.filter(l => l.id !== id);
+    setPurchaseLogs(updated);
+    await AsyncStorage.setItem('purchase_logs', JSON.stringify(updated));
+  };
   const loadOwnedCards = async () => {
     try {
       const val = await AsyncStorage.getItem('owned_cards');
@@ -945,6 +1031,12 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   const renderHeader = () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
       <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
+      <TouchableOpacity
+        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.LOGS ? theme.accent : theme.chip, marginRight: 8 }}
+        onPress={() => setScreen(screen === SCREENS.LOGS ? SCREENS.SEARCH : SCREENS.LOGS)}
+      >
+        <Text style={{ fontSize: 20 }}>💰</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.SETTINGS ? theme.accent : theme.chip }}
         onPress={() => setScreen(screen === SCREENS.SETTINGS ? SCREENS.SEARCH : SCREENS.SETTINGS)}
@@ -1283,6 +1375,134 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   }
 
  
+  if (screen === SCREENS.LOGS) {
+    const totalItems = purchaseLogs.reduce((sum, log) => sum + (log.type === 'trade' ? (log.given?.length || 0) + (log.received?.length || 0) : log.items?.length || 0), 0);
+    const totalSpent = purchaseLogs.reduce((sum, log) => {
+      if (log.type === 'purchase') return sum + (log.items?.reduce((s, i) => s + i.price, 0) || 0);
+      return sum;
+    }, 0);
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        {renderHeader()}
+        {renderTabBar()}
+        <ScrollView>
+          {/* Summary */}
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+            <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+              <Text style={{ color: theme.textMuted, fontSize: 12 }}>Total Entries</Text>
+              <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 24 }}>{purchaseLogs.length}</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+              <Text style={{ color: theme.textMuted, fontSize: 12 }}>Total Items</Text>
+              <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 24 }}>{totalItems}</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+              <Text style={{ color: theme.textMuted, fontSize: 12 }}>Total Spent</Text>
+              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 24 }}>${totalSpent.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          {purchaseLogs.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={{ fontSize: 40 }}>📋</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 16, marginTop: 10 }}>No logs yet.</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 13, marginTop: 6 }}>Complete a trade or tap "Log Purchase" on any card.</Text>
+            </View>
+          ) : (
+            purchaseLogs.map((log) => {
+              const isTrade = log.type === 'trade';
+              const isExpanded = expandedLog === log.id;
+              const itemCount = isTrade ? (log.given?.length || 0) + (log.received?.length || 0) : log.items?.length || 0;
+              const totalValue = isTrade
+                ? (log.received?.reduce((s, i) => s + i.price, 0) || 0)
+                : (log.items?.reduce((s, i) => s + i.price, 0) || 0);
+
+              return (
+                <TouchableOpacity key={log.id} onPress={() => setExpandedLog(isExpanded ? null : log.id)}
+                  style={{ backgroundColor: theme.card, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: isExpanded ? theme.accent : theme.cardBorder }}>
+                  {/* Header row */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 24, marginRight: 10 }}>{isTrade ? '🤝' : '💰'}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15 }}>
+                        {isTrade ? `Trade — ${log.given?.length || 0} given, ${log.received?.length || 0} received` : `Purchase — ${itemCount} item${itemCount !== 1 ? 's' : ''}`}
+                      </Text>
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>{log.date} • {log.timestamp}</Text>
+                      {isTrade && <Text style={{ color: Math.abs(log.delta) < 0.01 ? '#4caf50' : theme.accent, fontSize: 12, marginTop: 2 }}>
+                        {Math.abs(log.delta) < 0.01 ? '✅ Clean trade' : log.delta > 0 ? `They added $${Math.abs(log.delta).toFixed(2)}` : `You added $${Math.abs(log.delta).toFixed(2)}`}
+                      </Text>}
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 16 }}>${totalValue.toFixed(2)}</Text>
+                      <Text style={{ color: theme.textMuted, fontSize: 18, marginTop: 4 }}>{isExpanded ? '▲' : '▼'}</Text>
+                    </View>
+                  </View>
+
+                  {/* Expanded details */}
+                  {isExpanded && (
+                    <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: theme.cardBorder, paddingTop: 12 }}>
+                      {isTrade ? (
+                        <>
+                          {log.given?.length > 0 && (
+                            <>
+                              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>GIVEN</Text>
+                              {log.given.map((item, i) => (
+                                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                  {item.image && <Image source={{ uri: item.image }} style={{ width: 36, height: 50, borderRadius: 4, marginRight: 8 }} />}
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 13 }}>{item.name}</Text>
+                                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{item.set} — #{item.number} — {item.condition}</Text>
+                                  </View>
+                                  <Text style={{ color: theme.textMuted, fontWeight: 'bold' }}>${item.price.toFixed(2)}</Text>
+                                </View>
+                              ))}
+                            </>
+                          )}
+                          {log.received?.length > 0 && (
+                            <>
+                              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8, marginTop: 8 }}>RECEIVED</Text>
+                              {log.received.map((item, i) => (
+                                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                  {item.image && <Image source={{ uri: item.image }} style={{ width: 36, height: 50, borderRadius: 4, marginRight: 8 }} />}
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 13 }}>{item.name}</Text>
+                                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{item.set} — #{item.number} — {item.condition}</Text>
+                                  </View>
+                                  <Text style={{ color: '#4caf50', fontWeight: 'bold' }}>${item.price.toFixed(2)}</Text>
+                                </View>
+                              ))}
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {log.source && <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 8 }}>Source: {log.source}</Text>}
+                          {log.notes ? <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 8 }}>📝 {log.notes}</Text> : null}
+                          {log.items?.map((item, i) => (
+                            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                              {item.image && <Image source={{ uri: item.image }} style={{ width: 36, height: 50, borderRadius: 4, marginRight: 8 }} />}
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 13 }}>{item.name}</Text>
+                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{item.set} — #{item.number} — {item.condition}</Text>
+                              </View>
+                              <Text style={{ color: theme.accent, fontWeight: 'bold' }}>${item.price.toFixed(2)}</Text>
+                            </View>
+                          ))}
+                        </>
+                      )}
+                      <TouchableOpacity onPress={() => deletePurchaseLog(log.id)} style={{ marginTop: 8, alignItems: 'center', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: theme.clearButton }}>
+                        <Text style={{ color: theme.textMuted }}>🗑 Delete this log</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
   if (screen === SCREENS.TRACKER) {
     const ownedCount = selectedSet ? setCards.filter(c => ownedCards[c.id]).length : 0;
     const totalCount = setCards.length;
@@ -1834,13 +2054,75 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
             <Image source={{ uri: selectedCard.images.large }} style={styles.largeImage} />
             <Text style={[styles.cardName, { color: theme.text }]}>{selectedCard.name}</Text>
             <Text style={[styles.cardSet, { color: theme.textSecondary }]}>{selectedCard.set.name} — #{selectedCard.number}</Text>
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginTop: 10 }}
-                onPress={() => shareCard(selectedCard)}
-              >
-                <Text style={{ fontSize: 16, marginRight: 6 }}>📤</Text>
-                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>Share Price</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
+                  onPress={() => shareCard(selectedCard)}
+                >
+                  <Text style={{ fontSize: 16, marginRight: 6 }}>📤</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>Share</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.accentLight, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
+                  onPress={() => {
+                    setLogCard(selectedCard);
+                    setLogPrice(anchorPrice ? anchorPrice.toFixed(2) : '');
+                    setLogCondition(CONDITIONS[conditionIndex].label);
+                    setLogSource('Bought');
+                    setLogNotes('');
+                    setShowAddLog(true);
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginRight: 6 }}>💰</Text>
+                  <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>Log Purchase</Text>
+                </TouchableOpacity>
+              </View>
+
+              {showAddLog && logCard && (
+                <View style={{ width: '100%', backgroundColor: theme.card, borderRadius: 12, padding: 16, marginTop: 12, borderWidth: 1, borderColor: theme.accent }}>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>💰 Log Purchase</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Price Paid ($)</Text>
+                  <TextInput
+                    style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 8, padding: 10, color: theme.text, marginBottom: 10 }}
+                    placeholder="0.00"
+                    placeholderTextColor={theme.textMuted}
+                    value={logPrice}
+                    onChangeText={setLogPrice}
+                    keyboardType="decimal-pad"
+                  />
+                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Source</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                    {['Bought', 'Traded', 'Gift', 'Other'].map(s => (
+                      <TouchableOpacity key={s} onPress={() => setLogSource(s)}
+                        style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: logSource === s ? theme.accent : theme.cardBorder, backgroundColor: logSource === s ? theme.accent : theme.card }}>
+                        <Text style={{ color: logSource === s ? '#fff' : theme.textSecondary, fontSize: 12 }}>{s}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Notes (optional)</Text>
+                  <TextInput
+                    style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 8, padding: 10, color: theme.text, marginBottom: 12 }}
+                    placeholder="e.g. bought from collector fair"
+                    placeholderTextColor={theme.textMuted}
+                    value={logNotes}
+                    onChangeText={setLogNotes}
+                  />
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <TouchableOpacity
+                      style={{ flex: 1, padding: 12, backgroundColor: theme.accent, borderRadius: 8, alignItems: 'center' }}
+                      onPress={() => { addPurchaseLog(logCard, logPrice, logCondition, logSource, logNotes); setShowAddLog(false); }}
+                    >
+                      <Text style={{ color: '#fff', fontWeight: 'bold' }}>✅ Save Log</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ flex: 1, padding: 12, backgroundColor: theme.chip, borderRadius: 8, alignItems: 'center' }}
+                      onPress={() => setShowAddLog(false)}
+                    >
+                      <Text style={{ color: theme.textSecondary, fontWeight: 'bold' }}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
             {priceHistory.length > 1 && (
               <View style={[styles.priceHistoryBox, { backgroundColor: theme.priceBox }]}>
