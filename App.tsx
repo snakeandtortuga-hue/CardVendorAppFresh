@@ -219,7 +219,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker', LOGS: 'logs' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker', LOGS: 'logs', BULK: 'bulk' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -337,6 +337,10 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
   const [expandedLog, setExpandedLog] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
 const [supabaseSyncing, setSupabaseSyncing] = useState(false);
+const [bulkInput, setBulkInput] = useState('');
+const [bulkResults, setBulkResults] = useState([]);
+const [bulkLoading, setBulkLoading] = useState(false);
+const [bulkProgress, setBulkProgress] = useState('');
 const [lastSynced, setLastSynced] = useState(null);
 const [showAddLog, setShowAddLog] = useState(false);
 const [logCard, setLogCard] = useState(null);
@@ -1013,6 +1017,36 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     }
     setSetCardsLoading(false);
   };
+  const bulkSearch = async () => {
+    if (!bulkInput.trim()) return;
+    setBulkLoading(true);
+    setBulkResults([]);
+    const lines = bulkInput.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const results = [];
+    for (let i = 0; i < lines.length; i++) {
+      const name = lines[i];
+      setBulkProgress(`Looking up ${i + 1} of ${lines.length}: ${name}`);
+      try {
+        const cleanName = name.replace(/[^\w\s\-]/g, ' ').trim();
+        const response = await fetch(
+          `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(cleanName)}*&pageSize=1&orderBy=-tcgplayer.prices.holofoil.market`
+        );
+        const data = await response.json();
+        if (data.data && data.data.length > 0) {
+          const card = data.data[0];
+          const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
+          results.push({ name, card, price, found: true });
+        } else {
+          results.push({ name, card: null, price: 0, found: false });
+        }
+      } catch (e) {
+        results.push({ name, card: null, price: 0, found: false });
+      }
+    }
+    setBulkResults(results);
+    setBulkProgress('');
+    setBulkLoading(false);
+  };
   const shareCard = async (card) => {
     const price = getCardPrice(card);
     const vendorPriceAmt = price ? (price * (percentage / 100)).toFixed(2) : 'N/A';
@@ -1124,6 +1158,12 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     <View style={{ marginBottom: 15 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
+      <TouchableOpacity
+        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.BULK ? theme.accent : theme.chip, marginRight: 8 }}
+        onPress={() => setScreen(screen === SCREENS.BULK ? SCREENS.SEARCH : SCREENS.BULK)}
+      >
+        <Text style={{ fontSize: 20 }}>🧮</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.LOGS ? theme.accent : theme.chip, marginRight: 8 }}
         onPress={() => setScreen(screen === SCREENS.LOGS ? SCREENS.SEARCH : SCREENS.LOGS)}
@@ -1474,6 +1514,95 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   }
 
  
+  if (screen === SCREENS.BULK) {
+    const totalValue = bulkResults.reduce((sum, r) => sum + r.price, 0);
+    const vendorTotal = totalValue * (percentage / 100);
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        {renderHeader()}
+        {renderTabBar()}
+        <ScrollView>
+          <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>📋 Bulk Lookup</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 12 }}>Enter one card name per line. The app will look up the best match and price for each.</Text>
+
+          <TextInput
+            style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 10, padding: 12, color: theme.text, height: 160, textAlignVertical: 'top', marginBottom: 12, fontSize: 14 }}
+            placeholder={'Charizard\nPikachu\nM Charizard EX\nBlastoise Base Set'}
+            placeholderTextColor={theme.textMuted}
+            value={bulkInput}
+            onChangeText={setBulkInput}
+            multiline
+          />
+
+          <TouchableOpacity
+            style={{ backgroundColor: theme.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 16 }}
+            onPress={bulkSearch}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>🔍 Look Up All Cards</Text>
+          </TouchableOpacity>
+
+          {bulkLoading && (
+            <View style={{ alignItems: 'center', marginVertical: 20 }}>
+              <ActivityIndicator size="large" color={theme.accent} />
+              <Text style={{ color: theme.textMuted, marginTop: 8 }}>{bulkProgress}</Text>
+            </View>
+          )}
+
+          {bulkResults.length > 0 && !bulkLoading && (
+            <>
+              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+                <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Found</Text>
+                  <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 20 }}>{bulkResults.filter(r => r.found).length}/{bulkResults.length}</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Market Total</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 20 }}>${totalValue.toFixed(2)}</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Your Total ({percentage}%)</Text>
+                  <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 20 }}>${vendorTotal.toFixed(2)}</Text>
+                </View>
+              </View>
+
+              {bulkResults.map((result, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => result.found && selectCard(result.card)}
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: result.found ? theme.cardBorder : theme.accent, opacity: result.found ? 1 : 0.6 }}
+                >
+                  {result.found && result.card?.images?.small ? (
+                    <Image source={{ uri: result.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4, marginRight: 10 }} />
+                  ) : (
+                    <View style={{ width: 44, height: 62, borderRadius: 4, marginRight: 10, backgroundColor: theme.chip, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 20 }}>❓</Text>
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{result.name}</Text>
+                    {result.found ? (
+                      <>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>{result.card?.set?.name} — #{result.card?.number}</Text>
+                        <Text style={{ color: theme.textMuted, fontSize: 11 }}>{result.card?.rarity}</Text>
+                      </>
+                    ) : (
+                      <Text style={{ color: theme.accent, fontSize: 12 }}>Not found</Text>
+                    )}
+                  </View>
+                  {result.found && (
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16 }}>${result.price.toFixed(2)}</Text>
+                      <Text style={{ color: theme.accent, fontSize: 12 }}>${(result.price * (percentage / 100)).toFixed(2)}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
   if (screen === SCREENS.LOGS) {
     const totalItems = purchaseLogs.reduce((sum, log) => sum + (log.type === 'trade' ? (log.given?.length || 0) + (log.received?.length || 0) : log.items?.length || 0), 0);
     const totalSpent = purchaseLogs.reduce((sum, log) => {
