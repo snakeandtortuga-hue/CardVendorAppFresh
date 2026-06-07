@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Clipboard from 'expo-clipboard';
+import { supabase } from './supabase';
 import Slider from '@react-native-community/slider';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -334,6 +335,9 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
   const [ownedCards, setOwnedCards] = useState({});
   const [purchaseLogs, setPurchaseLogs] = useState([]);
   const [expandedLog, setExpandedLog] = useState(null);
+  const [deviceId, setDeviceId] = useState(null);
+const [supabaseSyncing, setSupabaseSyncing] = useState(false);
+const [lastSynced, setLastSynced] = useState(null);
 const [showAddLog, setShowAddLog] = useState(false);
 const [logCard, setLogCard] = useState(null);
 const [logPrice, setLogPrice] = useState('');
@@ -357,6 +361,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     fetchDiscoverData();
     loadOwnedCards();
     loadPurchaseLogs();
+    getOrCreateDeviceId().then(() => loadFromSupabase());
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
@@ -369,6 +374,12 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       setShowSearchSuggestions(false);
     }
   }, [query]);
+  // Auto-sync to Supabase when important data changes
+  useEffect(() => {
+    if (deviceId && purchaseLogs.length + Object.keys(ownedCards).length + wishlist.length > 0) {
+      syncToSupabase({});
+    }
+  }, [purchaseLogs, ownedCards, wishlist, savedTrades, deviceId]);
 
   const loadSettings = async () => {
     try {
@@ -853,6 +864,87 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     return CGC_GRADES;
   };
 
+  const getOrCreateDeviceId = async () => {
+    try {
+      let id = await AsyncStorage.getItem('device_id');
+      if (!id) {
+        id = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        await AsyncStorage.setItem('device_id', id);
+      }
+      console.log('Device ID:', id);
+      setDeviceId(id);
+      return id;
+    } catch (e) {
+      console.error('Device ID error:', e);
+      return null;
+    }
+  };
+
+  const syncToSupabase = async (data) => {
+    try {
+      const id = deviceId || await getOrCreateDeviceId();
+      console.log('Syncing to Supabase with device ID:', id);
+      console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+      if (!id) return;
+      setSupabaseSyncing(true);
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+        const response = await fetch(`${supabaseUrl}/rest/v1/user_data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify({
+            device_id: id,
+            purchase_logs: data.purchaseLogs ?? purchaseLogs,
+            owned_cards: data.ownedCards ?? ownedCards,
+            wishlist: data.wishlist ?? wishlist,
+            saved_trades: data.savedTrades ?? savedTrades,
+            vendor_percentage: data.percentage ?? percentage,
+            sealed_percentage: data.sealedPercentage ?? sealedPercentage,
+            graded_percentage: data.gradedPercentage ?? gradedPercentage,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+        console.log('Supabase response status:', response.status);
+        if (response.ok) {
+          console.log('Supabase sync success!');
+          setLastSynced(new Date().toLocaleTimeString());
+        } else {
+          const err = await response.text();
+          console.error('Supabase error:', err);
+        }
+    } catch (e) {
+      console.error('Supabase sync error', e);
+    }
+    setSupabaseSyncing(false);
+  };
+
+  const loadFromSupabase = async () => {
+    try {
+      const id = await getOrCreateDeviceId();
+      if (!id) return;
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('device_id', id)
+        .single();
+      if (error || !data) return;
+      if (data.purchase_logs) setPurchaseLogs(data.purchase_logs);
+      if (data.owned_cards) setOwnedCards(data.owned_cards);
+      if (data.wishlist) setWishlist(data.wishlist);
+      if (data.saved_trades) setSavedTrades(data.saved_trades);
+      if (data.vendor_percentage) setPercentage(data.vendor_percentage);
+      if (data.sealed_percentage) setSealedPercentage(data.sealed_percentage);
+      if (data.graded_percentage) setGradedPercentage(data.graded_percentage);
+      setLastSynced(new Date().toLocaleTimeString());
+    } catch (e) {
+      console.error('Supabase load error', e);
+    }
+  };
   const loadPurchaseLogs = async () => {
     try {
       const val = await AsyncStorage.getItem('purchase_logs');
@@ -1029,8 +1121,9 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   };
 
   const renderHeader = () => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-      <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
+    <View style={{ marginBottom: 15 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
       <TouchableOpacity
         style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.LOGS ? theme.accent : theme.chip, marginRight: 8 }}
         onPress={() => setScreen(screen === SCREENS.LOGS ? SCREENS.SEARCH : SCREENS.LOGS)}
@@ -1044,6 +1137,12 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
         <Text style={{ fontSize: 20 }}>⚙️</Text>
       </TouchableOpacity>
     </View>
+    {lastSynced && (
+      <Text style={{ color: theme.textMuted, fontSize: 10, textAlign: 'right' }}>
+        {supabaseSyncing ? '🔄 Syncing...' : `☁️ Synced ${lastSynced}`}
+      </Text>
+    )}
+  </View>
   );
 
   const renderTabBar = () => {
