@@ -857,8 +857,43 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     if (!certNumber.trim()) return;
     setCertLoading(true);
     setCertResult(null);
-    await new Promise(r => setTimeout(r, 800));
-    setCertResult({ message: `${selectedGrader} cert lookup requires API agreement. Grade ${selectedGrade} recorded manually.` });
+    try {
+      if (selectedGrader === 'PSA') {
+        // Check cache first
+        const cacheKey = `psa_cert_${certNumber.trim()}`;
+        const cached = await AsyncStorage.getItem(cacheKey);
+        if (cached) {
+          setCertResult(JSON.parse(cached));
+          setCertLoading(false);
+          return;
+        }
+        const token = process.env.EXPO_PUBLIC_PSA_TOKEN;
+        const response = await fetch(
+          `https://api.psacard.com/publicapi/cert/GetByCertNumber/${certNumber.trim()}`,
+          { headers: { 'Authorization': `bearer ${token}` } }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const result = {
+            cardName: data.PSACert?.Subject || 'Unknown',
+            grade: data.PSACert?.CardGrade || selectedGrade,
+            grader: 'PSA',
+            certNumber: certNumber.trim(),
+            authentic: data.PSACert?.IsDNAAuthentic !== false,
+            year: data.PSACert?.Year || '',
+            brand: data.PSACert?.Brand || '',
+          };
+          await AsyncStorage.setItem(cacheKey, JSON.stringify(result));
+          setCertResult(result);
+        } else {
+          setCertResult({ message: `PSA cert not found. Grade ${selectedGrade} recorded manually.` });
+        }
+      } else {
+        setCertResult({ message: `${selectedGrader} cert lookup coming soon. Grade ${selectedGrade} recorded manually.` });
+      }
+    } catch (e) {
+      setCertResult({ message: `Lookup failed. Grade ${selectedGrade} recorded manually.` });
+    }
     setCertLoading(false);
   };
 
@@ -2417,8 +2452,19 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
                   </TouchableOpacity>
                 </View>
                 {certResult && (
-                  <View style={[styles.certResult, { backgroundColor: darkMode ? '#2a2000' : '#fff3cd' }]}>
-                    <Text style={[styles.certResultText, { color: '#856404' }]}>⚠ {certResult.message}</Text>
+                  <View style={[styles.certResult, { backgroundColor: certResult.authentic === false ? '#2a0000' : darkMode ? '#0a2a0a' : '#d4edda' }]}>
+                    {certResult.message ? (
+                      <Text style={[styles.certResultText, { color: '#856404' }]}>⚠ {certResult.message}</Text>
+                    ) : (
+                      <>
+                        <Text style={{ color: certResult.authentic ? '#4caf50' : '#e63946', fontWeight: 'bold', fontSize: 14, marginBottom: 4 }}>
+                          {certResult.authentic ? '✅ AUTHENTIC' : '❌ VERIFY — NOT AUTHENTIC'}
+                        </Text>
+                        <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16 }}>{certResult.cardName}</Text>
+                        {certResult.year ? <Text style={{ color: theme.textSecondary, fontSize: 13 }}>{certResult.year} {certResult.brand}</Text> : null}
+                        <Text style={{ color: theme.textSecondary, fontSize: 13 }}>PSA {certResult.grade} — Cert #{certResult.certNumber}</Text>
+                      </>
+                    )}
                   </View>
                 )}
                 <View style={[styles.gradeSummary, { backgroundColor: theme.accent }]}>
