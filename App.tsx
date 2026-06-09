@@ -336,6 +336,13 @@ const [discoverLoading, setDiscoverLoading] = useState(false);
   const [purchaseLogs, setPurchaseLogs] = useState([]);
   const [expandedLog, setExpandedLog] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
+  const [user, setUser] = useState(null);
+const [authLoading, setAuthLoading] = useState(false);
+const [showAuth, setShowAuth] = useState(false);
+const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+const [authEmail, setAuthEmail] = useState('');
+const [authPassword, setAuthPassword] = useState('');
+const [authError, setAuthError] = useState('');
 const [supabaseSyncing, setSupabaseSyncing] = useState(false);
 const [bulkInput, setBulkInput] = useState('');
 const [bulkResults, setBulkResults] = useState([]);
@@ -366,6 +373,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     loadOwnedCards();
     loadPurchaseLogs();
     getOrCreateDeviceId().then(() => loadFromSupabase());
+    checkSession();
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
@@ -903,6 +911,60 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     return CGC_GRADES;
   };
 
+  const signUp = async () => {
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setUser(data.user);
+        setShowAuth(false);
+        alert('Account created! Check your email to verify.');
+      }
+    } catch (e) {
+      setAuthError('Sign up failed. Please try again.');
+    }
+    setAuthLoading(false);
+  };
+
+  const signIn = async () => {
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setUser(data.user);
+        setShowAuth(false);
+      }
+    } catch (e) {
+      setAuthError('Sign in failed. Please try again.');
+    }
+    setAuthLoading(false);
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  const checkSession = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUser(data.session.user);
+      }
+    } catch (e) {}
+  };
   const getOrCreateDeviceId = async () => {
     try {
       let id = await AsyncStorage.getItem('device_id');
@@ -1169,6 +1231,12 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     <View style={{ marginBottom: 15 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
+        <TouchableOpacity
+          style={{ padding: 8, borderRadius: 10, backgroundColor: theme.chip, marginRight: 8 }}
+          onPress={() => user ? signOut() : setShowAuth(true)}
+        >
+          <Text style={{ fontSize: 20 }}>{user ? '👤' : '🔑'}</Text>
+        </TouchableOpacity>
       <TouchableOpacity
         style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.BULK ? theme.accent : theme.chip, marginRight: 8 }}
         onPress={() => setScreen(screen === SCREENS.BULK ? SCREENS.SEARCH : SCREENS.BULK)}
@@ -1221,6 +1289,81 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     );
   };
 
+  if (showAuth) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.bg, justifyContent: 'center' }]}>
+        <TouchableOpacity onPress={() => setShowAuth(false)} style={{ position: 'absolute', top: 40, left: 20 }}>
+          <Text style={{ color: theme.accent, fontSize: 16 }}>← Back</Text>
+        </TouchableOpacity>
+
+        <View style={{ alignItems: 'center', marginBottom: 40 }}>
+          <Text style={{ fontSize: 40, marginBottom: 10 }}>🃏</Text>
+          <Text style={{ color: theme.text, fontSize: 28, fontWeight: 'bold' }}>TCG Market Master</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 6 }}>
+            {authMode === 'login' ? 'Sign in to your account' : 'Create your account'}
+          </Text>
+        </View>
+
+        <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
+          {authError ? (
+            <View style={{ backgroundColor: '#2a0000', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+              <Text style={{ color: '#e63946', fontSize: 14 }}>{authError}</Text>
+            </View>
+          ) : null}
+
+          <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6 }}>Email</Text>
+          <TextInput
+            style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 10, padding: 14, color: theme.text, marginBottom: 16, fontSize: 16 }}
+            placeholder="your@email.com"
+            placeholderTextColor={theme.textMuted}
+            value={authEmail}
+            onChangeText={setAuthEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6 }}>Password</Text>
+          <TextInput
+            style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 10, padding: 14, color: theme.text, marginBottom: 24, fontSize: 16 }}
+            placeholder="••••••••"
+            placeholderTextColor={theme.textMuted}
+            value={authPassword}
+            onChangeText={setAuthPassword}
+            secureTextEntry
+          />
+
+          <TouchableOpacity
+            style={{ backgroundColor: theme.accent, borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 16 }}
+            onPress={authMode === 'login' ? signIn : signUp}
+            disabled={authLoading}
+          >
+            {authLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+                {authMode === 'login' ? 'Sign In' : 'Create Account'}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setAuthError(''); }}
+            style={{ alignItems: 'center', padding: 12 }}
+          >
+            <Text style={{ color: theme.accent, fontSize: 14 }}>
+              {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </Text>
+          </TouchableOpacity>
+
+          {authMode === 'signup' && (
+            <Text style={{ color: theme.textMuted, fontSize: 11, textAlign: 'center', marginTop: 12 }}>
+              By creating an account you agree to our Terms of Service. 14-day free trial included.
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  }
   if (screen === SCREENS.SETTINGS) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
