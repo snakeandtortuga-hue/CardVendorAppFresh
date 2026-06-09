@@ -219,7 +219,7 @@ const VARIANTS = [
   { key: 'promo', label: 'Promo', premium: false },
 ];
 
-const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker', LOGS: 'logs', BULK: 'bulk' };
+const SCREENS = { SEARCH: 'search', CARD: 'card', SEALED: 'sealed', BARTER: 'barter', BARTER_SEARCH: 'barter_search', SETTINGS: 'settings', DISCOVER: 'discover', WISHLIST: 'wishlist', TRACKER: 'tracker', LOGS: 'logs', BULK: 'bulk', DISPLAY: 'display' };
 
 const generateMockPriceHistory = (currentPrice, releaseDate) => {
   if (!currentPrice || !releaseDate) return [];
@@ -1549,6 +1549,51 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   }
 
  
+  if (screen === SCREENS.DISPLAY) {
+    const displayPrice = selectedCard ? getCardPrice(selectedCard) : 0;
+    const displayVendorPrice = displayPrice * (percentage / 100);
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <TouchableOpacity
+          style={{ position: 'absolute', top: 40, right: 20, backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: 10 }}
+          onPress={() => setScreen(SCREENS.CARD)}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>✕ Exit Display Mode</Text>
+        </TouchableOpacity>
+
+        {selectedCard && (
+          <>
+            <Image
+              source={{ uri: selectedCard.images?.large }}
+              style={{ width: 220, height: 308, borderRadius: 12, marginBottom: 30 }}
+            />
+            <Text style={{ color: '#fff', fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 }}>
+              {selectedCard.name}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 40 }}>
+              {selectedCard.set?.name} — #{selectedCard.number}
+            </Text>
+
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20, padding: 30, alignItems: 'center', width: '100%', marginBottom: 20 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginBottom: 8 }}>Market Price</Text>
+              <Text style={{ color: '#fff', fontSize: 56, fontWeight: 'bold', letterSpacing: -2 }}>
+                ${displayPrice.toFixed(2)}
+              </Text>
+            </View>
+
+            <View style={{ backgroundColor: theme.accent, borderRadius: 20, padding: 30, alignItems: 'center', width: '100%' }}>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 16, marginBottom: 8 }}>Our Price</Text>
+              <Text style={{ color: '#fff', fontSize: 64, fontWeight: 'bold', letterSpacing: -3 }}>
+                ${displayVendorPrice.toFixed(2)}
+              </Text>
+            </View>
+
+            <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 30 }}>TCG Market Master</Text>
+          </>
+        )}
+      </View>
+    );
+  }
   if (screen === SCREENS.BULK) {
     const totalValue = bulkResults.reduce((sum, r) => sum + r.price, 0);
     const vendorTotal = totalValue * (percentage / 100);
@@ -2324,6 +2369,13 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
                 >
                   <Text style={{ fontSize: 16, marginRight: 6 }}>📤</Text>
                   <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>Share</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#000', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
+                  onPress={() => setScreen(SCREENS.DISPLAY)}
+                >
+                  <Text style={{ fontSize: 16, marginRight: 6 }}>🖥️</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Display</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.accentLight, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
