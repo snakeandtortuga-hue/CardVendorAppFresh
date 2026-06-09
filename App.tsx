@@ -1094,49 +1094,25 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       console.error('Share error', e);
     }
   };
+  const PROXY_URL = 'https://tcgproxyserver.onrender.com';
+
   const getEbayToken = async () => {
-    try {
-      const clientId = process.env.EXPO_PUBLIC_EBAY_CLIENT_ID;
-      const clientSecret = process.env.EXPO_PUBLIC_EBAY_CLIENT_SECRET;
-      const credentials = btoa(`${clientId}:${clientSecret}`);
-      const response = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope',
-      });
-      const data = await response.json();
-      return data.access_token;
-    } catch (e) {
-      console.error('eBay token error', e);
-      return null;
-    }
+    // Token is handled by proxy server — no longer needed client-side
+    return null;
   };
 
   const fetchEbayPrice = async (cardName) => {
     try {
-      const token = await getEbayToken();
-      if (!token) return;
       const query = encodeURIComponent(`${cardName} pokemon card`);
-      const response = await fetch(
-        `https://api.ebay.com/buy/marketplace-insights/v1_beta/item_sales/search?q=${query}&limit=10`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await fetch(`${PROXY_URL}/ebay/sold?query=${query}`);
       const data = await response.json();
-      if (data.itemSales && data.itemSales.length > 0) {
-        const prices = data.itemSales
-          .map(item => parseFloat(item.lastSoldPrice?.value || 0))
+      if (data.itemSummaries && data.itemSummaries.length > 0) {
+        const prices = data.itemSummaries
+          .map(item => parseFloat(item.price?.value || 0))
           .filter(p => p > 0);
         if (prices.length > 0) {
           const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-          const recent = parseFloat(data.itemSales[0].lastSoldPrice?.value || 0);
+          const recent = parseFloat(data.itemSummaries[0].price?.value || 0);
           setEbayPrices(prev => ({
             ...prev,
             [cardName]: { sold: recent, avg30: avg }
