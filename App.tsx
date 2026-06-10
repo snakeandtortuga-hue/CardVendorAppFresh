@@ -10,23 +10,23 @@ import Slider from '@react-native-community/slider';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const LIGHT = {
-  bg: '#ffffff', card: '#ffffff', cardBorder: '#eeeeee', input: '#ffffff',
-  inputBorder: '#cccccc', text: '#222222', textSecondary: '#666666',
-  textMuted: '#999999', accent: '#e63946', accentLight: '#fff3f3',
-  priceBox: '#f8f8f8', variantBox: '#fffbf0', variantBorder: '#f4a261',
-  gradedBox: '#f8f8f8', chip: '#f0f0f0', chipText: '#444444',
-  tabBg: '#ffffff', deltaClean: '#d4edda', deltaPos: '#fff3cd', deltaNeg: '#fff3f3',
-  deckCard: '#f8f8f8', clearButton: '#cccccc', sectionTitle: '#444444',
+  bg: '#F5F5F7', card: '#FFFFFF', cardBorder: '#E8E8ED', input: '#FFFFFF',
+  inputBorder: '#D1D1D6', text: '#1A1A2E', textSecondary: '#6B6B80',
+  textMuted: '#A0A0B0', accent: '#E63946', accentLight: '#FFF0F1',
+  priceBox: '#FFFFFF', variantBox: '#FFFBF0', variantBorder: '#F4A261',
+  gradedBox: '#F5F5F7', chip: '#EBEBF0', chipText: '#3A3A4A',
+  tabBg: '#FFFFFF', deltaClean: '#E8F5E9', deltaPos: '#FFF8E1', deltaNeg: '#FFF0F1',
+  deckCard: '#F5F5F7', clearButton: '#D1D1D6', sectionTitle: '#3A3A4A',
 };
 
 const DARK = {
-  bg: '#121212', card: '#1e1e1e', cardBorder: '#2a2a2a', input: '#1e1e1e',
-  inputBorder: '#333333', text: '#f0f0f0', textSecondary: '#aaaaaa',
-  textMuted: '#666666', accent: '#e63946', accentLight: '#2a1515',
-  priceBox: '#1e1e1e', variantBox: '#1a1500', variantBorder: '#f4a261',
-  gradedBox: '#1e1e1e', chip: '#2a2a2a', chipText: '#cccccc',
-  tabBg: '#1e1e1e', deltaClean: '#1a2e1a', deltaPos: '#2a2500', deltaNeg: '#2a1515',
-  deckCard: '#1e1e1e', clearButton: '#333333', sectionTitle: '#aaaaaa',
+  bg: '#0D0D0D', card: '#1A1A1A', cardBorder: '#2A2A2A', input: '#1A1A1A',
+  inputBorder: '#333333', text: '#F2F2F7', textSecondary: '#A0A0B0',
+  textMuted: '#58585A', accent: '#E63946', accentLight: '#2A1215',
+  priceBox: '#1A1A1A', variantBox: '#1A1500', variantBorder: '#F4A261',
+  gradedBox: '#1A1A1A', chip: '#2A2A2A', chipText: '#C7C7CC',
+  tabBg: '#1A1A1A', deltaClean: '#1A2E1A', deltaPos: '#2A2500', deltaNeg: '#2A1215',
+  deckCard: '#1A1A1A', clearButton: '#333333', sectionTitle: '#A0A0B0',
 };
 
 const APP_LANGUAGES = [
@@ -363,6 +363,16 @@ const [selectedSet, setSelectedSet] = useState(null);
 const [setCards, setSetCards] = useState([]);
 const [setCardsLoading, setSetCardsLoading] = useState(false);
   const [ebayPrices, setEbayPrices] = useState({});
+  const [selectedFranchise, setSelectedFranchise] = useState('pokemon');
+
+const FRANCHISES = [
+  { id: 'pokemon', name: 'Pokémon', emoji: '⚡', color: '#E63946', available: true },
+  { id: 'mtg', name: 'MTG', emoji: '⚔️', color: '#7B2D8B', available: false },
+  { id: 'yugioh', name: 'Yu-Gi-Oh', emoji: '🐉', color: '#F4A261', available: false },
+  { id: 'onepiece', name: 'One Piece', emoji: '☠️', color: '#E63946', available: false },
+  { id: 'lorcana', name: 'Lorcana', emoji: '✨', color: '#4A90D9', available: false },
+  { id: 'sports', name: 'Sports', emoji: '🏆', color: '#4CAF50', available: false },
+];
 
   const t = TRANSLATIONS[appLang];
 
@@ -1310,42 +1320,108 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
 
   
   const renderHeader = () => (
-    <View style={{ marginBottom: 15 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={[styles.title, { color: theme.text, flex: 1, marginBottom: 0, textAlign: 'left' }]}>TCG Market Master</Text>
-        <TouchableOpacity
-          style={{ padding: 8, borderRadius: 10, backgroundColor: theme.chip, marginRight: 8 }}
-          onPress={() => user ? signOut() : setShowAuth(true)}
-        >
-          <Text style={{ fontSize: 20 }}>{user ? '👤' : '🔑'}</Text>
-        </TouchableOpacity>
-      <TouchableOpacity
-        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.BULK ? theme.accent : theme.chip, marginRight: 8 }}
-        onPress={() => setScreen(screen === SCREENS.BULK ? SCREENS.SEARCH : SCREENS.BULK)}
-      >
-        <Text style={{ fontSize: 20 }}>🧮</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.LOGS ? theme.accent : theme.chip, marginRight: 8 }}
-        onPress={() => setScreen(screen === SCREENS.LOGS ? SCREENS.SEARCH : SCREENS.LOGS)}
-      >
-        <Text style={{ fontSize: 20 }}>💰</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{ padding: 8, borderRadius: 10, backgroundColor: screen === SCREENS.SETTINGS ? theme.accent : theme.chip }}
-        onPress={() => setScreen(screen === SCREENS.SETTINGS ? SCREENS.SEARCH : SCREENS.SETTINGS)}
-      >
-        <Text style={{ fontSize: 20 }}>⚙️</Text>
-      </TouchableOpacity>
+    <View style={{ marginBottom: 14 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ color: theme.text, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>TCG Market Master</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity
+            style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: user ? theme.accent : theme.chip, alignItems: 'center', justifyContent: 'center' }}
+            onPress={() => user ? signOut() : setShowAuth(true)}
+          >
+            <Text style={{ fontSize: 26 }}>👤</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: screen === SCREENS.SETTINGS ? theme.accent : theme.chip, alignItems: 'center', justifyContent: 'center' }}
+            onPress={() => setScreen(screen === SCREENS.SETTINGS ? SCREENS.SEARCH : SCREENS.SETTINGS)}
+          >
+            <Text style={{ fontSize: 26 }}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      {lastSynced && (
+        <Text style={{ color: theme.textMuted, fontSize: 10, textAlign: 'right', marginTop: 2 }}>
+          {supabaseSyncing ? '🔄 Syncing...' : `☁️ Synced ${lastSynced}`}
+        </Text>
+      )}
     </View>
-    {lastSynced && (
-      <Text style={{ color: theme.textMuted, fontSize: 10, textAlign: 'right' }}>
-        {supabaseSyncing ? '🔄 Syncing...' : `☁️ Synced ${lastSynced}`}
-      </Text>
-    )}
-  </View>
   );
 
+  const renderFranchiseCarousel = () => {
+    const currentIndex = FRANCHISES.findIndex(f => f.id === selectedFranchise);
+    const franchise = FRANCHISES[currentIndex] || FRANCHISES[0];
+
+    return (
+      <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ width: SCREEN_WIDTH - 40 }}
+          contentContainerStyle={{ alignItems: 'center' }}
+          snapToInterval={SCREEN_WIDTH - 40}
+          decelerationRate="fast"
+          onMomentumScrollEnd={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
+            if (index >= 0 && index < FRANCHISES.length) {
+              setSelectedFranchise(FRANCHISES[index].id);
+            }
+          }}
+        >
+          {FRANCHISES.map((f) => (
+            <View
+              key={f.id}
+              style={{
+                width: SCREEN_WIDTH - 40,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 24,
+              }}
+            >
+              <View style={{
+                width: 110,
+                height: 110,
+                borderRadius: 55,
+                backgroundColor: f.available ? f.color : theme.chip,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: f.available ? 1 : 0.4,
+                elevation: f.available ? 10 : 0,
+              }}>
+                <Text style={{ fontSize: 48 }}>{f.emoji}</Text>
+              </View>
+              <Text style={{
+                color: f.available ? theme.text : theme.textMuted,
+                fontSize: 22,
+                fontWeight: '700',
+                marginTop: 14,
+                textAlign: 'center',
+              }}>{f.name}</Text>
+              {!f.available && (
+                <View style={{ marginTop: 6, backgroundColor: theme.chip, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 }}>
+                  <Text style={{ color: theme.textMuted, fontSize: 11, fontWeight: '600' }}>Coming Soon</Text>
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Dot indicators */}
+        <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
+          {FRANCHISES.map((f) => (
+            <View
+              key={f.id}
+              style={{
+                width: selectedFranchise === f.id ? 20 : 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: selectedFranchise === f.id ? theme.accent : theme.cardBorder,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  };
   const renderTabBar = () => {
     const tabs = [
       { screen: SCREENS.SEARCH, icon: '🔍', label: 'Singles', active: screen === SCREENS.SEARCH || screen === SCREENS.CARD },
@@ -1353,18 +1429,17 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       { screen: SCREENS.BARTER, icon: '🤝', label: 'Barter', active: screen === SCREENS.BARTER || screen === SCREENS.BARTER_SEARCH },
       { screen: SCREENS.DISCOVER, icon: '📰', label: 'Discover', active: screen === SCREENS.DISCOVER },
       { screen: SCREENS.TRACKER, icon: '📋', label: 'Tracker', active: screen === SCREENS.TRACKER },
-      { screen: SCREENS.WISHLIST, icon: '⭐', label: 'Wishlist', active: screen === SCREENS.WISHLIST },
     ];
     return (
-      <View style={{ flexDirection: 'row', marginBottom: 15, backgroundColor: theme.tabBg, borderRadius: 16, padding: 4, borderWidth: 1, borderColor: theme.cardBorder }}>
+      <View style={{ flexDirection: 'row', marginBottom: 12, backgroundColor: theme.card, borderRadius: 20, padding: 6, borderWidth: 1, borderColor: theme.cardBorder }}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.screen}
-            style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: tab.active ? theme.accent : 'transparent' }}
+            style={{ flex: 1, alignItems: 'center', paddingVertical: 14, borderRadius: 16, backgroundColor: tab.active ? theme.accent : 'transparent' }}
             onPress={() => setScreen(tab.screen)}
           >
-            <Text style={{ fontSize: 18 }}>{tab.icon}</Text>
-            <Text style={{ fontSize: 10, fontWeight: 'bold', color: tab.active ? '#fff' : theme.textSecondary, marginTop: 2 }}>{tab.label}</Text>
+            <Text style={{ fontSize: 24 }}>{tab.icon}</Text>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: tab.active ? '#fff' : theme.textSecondary, marginTop: 4 }}>{tab.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -2417,25 +2492,44 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
               </CameraView>
             </View>
           ) : (
-            <View style={styles.searchRow}>
-              <TouchableOpacity style={[styles.micButton, { backgroundColor: listening ? '#ffd6d6' : theme.chip }]} onPress={startListening}>
-                <Text style={styles.micIcon}>{listening ? '🔴' : '🎤'}</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={[styles.input, { backgroundColor: theme.input, borderColor: theme.inputBorder, color: theme.text }]}
-                placeholder={t.searchPlaceholder}
-                placeholderTextColor={theme.textMuted}
-                value={query}
-                onChangeText={setQuery}
-                onSubmitEditing={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
-                returnKeyType="search"
-              />
-              <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.chip }]} onPress={openCamera}>
-                <Text style={styles.micIcon}>📷</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: theme.accent }]} onPress={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}>
-                <Text style={styles.buttonText}>{t.search}</Text>
-              </TouchableOpacity>
+            <View style={{ marginBottom: 12, alignItems: 'center' }}>
+              {/* Main search row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', gap: 8 }}>
+                {/* Left: mic + camera */}
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  <TouchableOpacity
+                    style={{ width: 48, height: 52, borderRadius: 14, backgroundColor: listening ? '#ffd6d6' : theme.chip, alignItems: 'center', justifyContent: 'center' }}
+                    onPress={startListening}
+                  >
+                    <Text style={{ fontSize: 22 }}>{listening ? '🔴' : '🎤'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ width: 48, height: 52, borderRadius: 14, backgroundColor: theme.chip, alignItems: 'center', justifyContent: 'center' }}
+                    onPress={openCamera}
+                  >
+                    <Text style={{ fontSize: 22 }}>📷</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Center: search input */}
+                <TextInput
+                  style={{ flex: 1, backgroundColor: theme.input, borderWidth: 1.5, borderColor: theme.inputBorder, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, color: theme.text, fontSize: 16 }}
+                  placeholder={t.searchPlaceholder}
+                  placeholderTextColor={theme.textMuted}
+                  value={query}
+                  onChangeText={setQuery}
+                  onSubmitEditing={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
+                  returnKeyType="search"
+                />
+
+                {/* Right: search button */}
+                <TouchableOpacity
+                  style={{ height: 52, paddingHorizontal: 18, borderRadius: 14, backgroundColor: theme.accent, alignItems: 'center', justifyContent: 'center' }}
+                  onPress={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>{t.search}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
           {listening && <Text style={[styles.listeningText, { color: theme.accent }]}>{t.listening}</Text>}
@@ -2471,42 +2565,27 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
           )}
 
           {results.length === 0 && !loading && !searchError && query.trim() === '' && (
-            <View style={{ alignItems: 'center', paddingTop: 40, paddingHorizontal: 20 }}>
-              <Text style={{ fontSize: 60, marginBottom: 16 }}>🃏</Text>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 }}>
               
-              <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 8, textAlign: 'center' }}>Welcome</Text>
-              <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 30, lineHeight: 22 }}>Search any card, check live prices, evaluate trades and manage your barter sessions.</Text>
-              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 30 }}>
-                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
-                  <Text style={{ fontSize: 28 }}>💰</Text>
-                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Live Prices</Text>
-                </View>
-                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
-                  <Text style={{ fontSize: 28 }}>🤝</Text>
-                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Barter Engine</Text>
-                </View>
-                <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
-                  <Text style={{ fontSize: 28 }}>🏆</Text>
-                  <Text style={{ color: theme.text, fontWeight: 'bold', marginTop: 6, fontSize: 12, textAlign: 'center' }}>Graded Lookup</Text>
-                </View>
+              {/* Top text */}
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginBottom: 4, textAlign: 'center' }}>Welcome</Text>
+                <Text style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+                  Search any card across all TCGs
+                </Text>
               </View>
+
+              {/* Franchise Carousel — centered */}
+              <View style={{ flex: 1, justifyContent: 'center', width: '100%' }}>
+                {renderFranchiseCarousel()}
+              </View>
+
+              {/* placeholder to push carousel up slightly */}
+              <View style={{ height: 20 }} />
             </View>
           )}
 
-          {results.length === 0 && !loading && recentSearches.length > 0 && !searchError && query.trim() === '' && (
-            <View style={styles.recentContainer}>
-              <Text style={[styles.recentTitle, { color: theme.textMuted }]}>{t.recentSearches}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.recentRow}>
-                  {recentSearches.map((s, i) => (
-                    <TouchableOpacity key={i} style={[styles.recentChip, { backgroundColor: theme.chip }]} onPress={() => { setQuery(s); searchCards(s); }}>
-                      <Text style={[styles.recentChipText, { color: theme.chipText }]}>{s}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          )}
+          
 
           {searchError ? (
             <View style={{ alignItems: 'center', marginVertical: 40 }}>
@@ -2537,6 +2616,24 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
               <ActivityIndicator size="large" color={theme.accent} />
               {loadingProgress ? <Text style={{ color: theme.textMuted, marginTop: 8, fontSize: 13 }}>{loadingProgress}</Text> : null}
             </View>
+          )}
+          {results.length === 0 && !loading && !searchError && query.trim() === '' && (
+            <>
+              <TouchableOpacity
+                style={{ position: 'absolute', bottom: 80, left: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+                onPress={() => setScreen(SCREENS.WISHLIST)}
+              >
+                <Text style={{ fontSize: 22 }}>⭐</Text>
+                <Text style={{ color: theme.text, fontWeight: '600', fontSize: 14 }}>Wishlist</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ position: 'absolute', bottom: 80, right: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+                onPress={() => setScreen(SCREENS.LOGS)}
+              >
+                <Text style={{ fontSize: 22 }}>💰</Text>
+                <Text style={{ color: theme.text, fontWeight: '600', fontSize: 14 }}>Logs</Text>
+              </TouchableOpacity>
+            </>
           )}
           {!loading && results.length === 0 && !searchError && query.trim() !== '' && (
             <View style={{ alignItems: 'center', marginVertical: 40 }}>
@@ -2820,7 +2917,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 52, paddingBottom: 20 },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 0, textAlign: 'left' },
   tabBar: { flexDirection: 'row', marginBottom: 15, borderRadius: 8, overflow: 'hidden', borderWidth: 1 },
   tab: { flex: 1, padding: 10, alignItems: 'center' },
