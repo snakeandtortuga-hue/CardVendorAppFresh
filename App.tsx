@@ -758,6 +758,8 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     setLoading(true);
     setSelectedCard(null);
     setSearchError('');
+    setShowSearchSuggestions(false);
+    setSearchSuggestions([]);
     try {
       // Check cache first
       if (searchCache.current[q.toLowerCase()]) {
@@ -2333,7 +2335,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
               <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.chip }]} onPress={openCamera}>
                 <Text style={styles.micIcon}>📷</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: theme.accent }]} onPress={() => searchCards()}>
+              <TouchableOpacity style={[styles.button, { backgroundColor: theme.accent }]} onPress={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}>
                 <Text style={styles.buttonText}>{t.search}</Text>
               </TouchableOpacity>
             </View>
