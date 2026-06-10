@@ -60,6 +60,29 @@ const TRANSLATIONS = {
     priceHistoryNote: 'Historical data connects to TCGPlayer API on launch.',
     sortBy: 'Sort:', sortName: 'Name', sortPrice: 'Price', sortSet: 'Set',
     darkMode: 'Dark Mode', appearance: 'Appearance', noResults: 'No results found.',
+    vendorDefaults: 'Vendor Price Defaults', singlesCat: 'Singles', sealedProducts: 'Sealed Products', gradedCards: 'Graded Cards',
+    trackerTitle: 'Set Completion Tracker', trackerSubtitle: 'Tap a set to track which cards you own.',
+    backToSets: '← Back to Sets', cards: 'cards', ownedOf: 'owned',
+    saveTradeRecord: '💾 Save Trade Record', clearTrade2: '🗑 Clear Trade', viewSavedTrades: '▼ View Saved Trades', hideSavedTrades: '▲ Hide Saved Trades',
+    noSavedTrades: 'No saved trades yet.', yourDeckLabel: 'You', theirDeckLabel: 'Vendor',
+    totalEntries: 'Total Entries', totalItems: 'Total Items', totalSpent: 'Total Spent',
+    given: 'GIVEN', received: 'RECEIVED', deleteLog: '{t.deleteLog}', noLogs: 'No logs yet.',
+    logsSubtitle: '{t.logsSubtitle}',
+    wishlistEmpty: '{t.wishlistEmpty}', wishlistSubtitle: 'Search for cards and tap "Add to Wishlist".',
+    market: 'Market', targetPrice: 'Target Price ($)', atTarget: '✅ At target',
+    upcoming: 'UPCOMING', recentReleases: 'RECENT RELEASES', trendingCards: '🔥 Trending Cards',
+    highestValued: 'Highest valued cards right now', priceMovers: '📊 Price Movers',
+    gainers: '{t.gainers}', losers: '{t.losers}', refreshData: '{t.refreshData}',
+    bulkTitle: '📋 Bulk Lookup', bulkSubtitle: 'Enter one card name per line.',
+    lookUpAll: '🔍 Look Up All Cards', found: 'Found', marketTotal: 'Market Total', yourTotal: 'Your Total',
+    shareBtn: 'Share', displayBtn: 'Display', logPurchase: 'Log Purchase',
+    addToWishlist: 'Add to Wishlist', pricePaid: 'Price Paid ($)', source: 'Source', notes: 'Notes (optional)',
+    saveLog: '✅ Save Log', cancel: 'Cancel',
+    signIn: 'Sign In', createAccount: 'Create Account', emailPlaceholder: 'your@email.com',
+    signInSubtitle: 'Sign in to your account', createSubtitle: 'Create your account',
+    noAccount: "Don't have an account? Sign up", hasAccount: 'Already have an account? Sign in',
+    termsNote: '{t.termsNote}',
+    hot: '{t.hot}', welcome: 'Welcome', welcomeSubtitle: 'Search any card across all TCGs',
   },
   fr: {
     title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Scellé', barter: '🤝 Échange',
@@ -83,6 +106,29 @@ const TRANSLATIONS = {
     priceHistoryNote: 'Données historiques via TCGPlayer API au lancement.',
     sortBy: 'Trier :', sortName: 'Nom', sortPrice: 'Prix', sortSet: 'Set',
     darkMode: 'Mode sombre', appearance: 'Apparence', noResults: 'Aucun résultat.',
+    vendorDefaults: 'Prix vendeur par défaut', singlesCat: 'Singles', sealedProducts: 'Produits scellés', gradedCards: 'Cartes gradées',
+    trackerTitle: 'Suivi de collection', trackerSubtitle: 'Appuyez sur un set pour suivre vos cartes.',
+    backToSets: '← Retour aux sets', cards: 'cartes', ownedOf: 'possédées',
+    saveTradeRecord: '💾 Sauvegarder l\'échange', clearTrade2: '🗑 Effacer l\'échange', viewSavedTrades: '▼ Voir les échanges', hideSavedTrades: '▲ Masquer les échanges',
+    noSavedTrades: 'Aucun échange sauvegardé.', yourDeckLabel: 'Vous', theirDeckLabel: 'Vendeur',
+    totalEntries: 'Total entrées', totalItems: 'Total articles', totalSpent: 'Total dépensé',
+    given: 'DONNÉ', received: 'REÇU', deleteLog: '🗑 Supprimer', noLogs: 'Aucun journal.',
+    logsSubtitle: 'Complétez un échange ou appuyez sur "Enregistrer achat".',
+    wishlistEmpty: 'Votre liste de souhaits est vide', wishlistSubtitle: 'Recherchez des cartes et appuyez sur "Ajouter à la liste".',
+    market: 'Marché', targetPrice: 'Prix cible ($)', atTarget: '✅ Objectif atteint',
+    upcoming: 'À VENIR', recentReleases: 'SORTIES RÉCENTES', trendingCards: '🔥 Cartes tendance',
+    highestValued: 'Cartes les plus valorisées', priceMovers: '📊 Mouvements de prix',
+    gainers: '▲ Hausse', losers: '▼ Baisse', refreshData: '🔄 Actualiser',
+    bulkTitle: '📋 Recherche en lot', bulkSubtitle: 'Entrez un nom de carte par ligne.',
+    lookUpAll: '🔍 Rechercher toutes les cartes', found: 'Trouvé', marketTotal: 'Total marché', yourTotal: 'Votre total',
+    shareBtn: 'Partager', displayBtn: 'Afficher', logPurchase: 'Enregistrer achat',
+    addToWishlist: 'Ajouter à la liste', pricePaid: 'Prix payé ($)', source: 'Source', notes: 'Notes (optionnel)',
+    saveLog: '✅ Sauvegarder', cancel: 'Annuler',
+    signIn: 'Se connecter', createAccount: 'Créer un compte', emailPlaceholder: 'votre@email.com',
+    signInSubtitle: 'Connectez-vous à votre compte', createSubtitle: 'Créez votre compte',
+    noAccount: "Pas de compte ? S'inscrire", hasAccount: 'Déjà un compte ? Se connecter',
+    termsNote: 'En créant un compte vous acceptez nos conditions. Essai gratuit de 14 jours inclus.',
+    hot: '▲ Tendance', welcome: 'Bienvenue', welcomeSubtitle: 'Recherchez des cartes de tous les JCC',
   },
   ja: {
     title: 'TCG Market Master', singles: '🔍 シングル', sealed: '📦 未開封', barter: '🤝 トレード',
@@ -106,6 +152,29 @@ const TRANSLATIONS = {
     priceHistoryNote: 'TCGPlayer APIで価格履歴を提供予定。',
     sortBy: '並び替え：', sortName: '名前', sortPrice: '価格', sortSet: 'セット',
     darkMode: 'ダークモード', appearance: '外観', noResults: '結果なし。',
+    vendorDefaults: '販売価格デフォルト', singles: 'シングル', sealedProducts: '未開封品', gradedCards: 'グレードカード',
+    trackerTitle: 'セットコンプリート', trackerSubtitle: 'セットをタップして所持カードを追跡。',
+    backToSets: '← セット一覧に戻る', cards: '枚', ownedOf: '所持',
+    saveTradeRecord: '💾 取引を保存', clearTrade2: '🗑 取引をクリア', viewSavedTrades: '▼ 保存済み取引', hideSavedTrades: '▲ 隠す',
+    noSavedTrades: '保存済み取引なし。', yourDeckLabel: 'あなた', theirDeckLabel: '販売者',
+    totalEntries: '合計エントリー', totalItems: '合計アイテム', totalSpent: '合計支出',
+    given: '渡した', received: '受け取った', deleteLog: '🗑 削除', noLogs: 'ログなし。',
+    logsSubtitle: '取引を完了するか「購入を記録」をタップ。',
+    wishlistEmpty: 'ウィッシュリストは空です', wishlistSubtitle: 'カードを検索して追加してください。',
+    market: '市場', targetPrice: '目標価格 ($)', atTarget: '✅ 目標達成',
+    upcoming: '近日公開', recentReleases: '最近のリリース', trendingCards: '🔥 トレンドカード',
+    highestValued: '最高価値カード', priceMovers: '📊 価格変動',
+    gainers: '▲ 上昇', losers: '▼ 下落', refreshData: '🔄 更新',
+    bulkTitle: '📋 一括検索', bulkSubtitle: '1行に1枚のカード名を入力。',
+    lookUpAll: '🔍 全カードを検索', found: '見つかった', marketTotal: '市場合計', yourTotal: 'あなたの合計',
+    shareBtn: '共有', displayBtn: '表示', logPurchase: '購入を記録',
+    addToWishlist: 'ウィッシュリストに追加', pricePaid: '支払い価格 ($)', source: 'ソース', notes: 'メモ（任意）',
+    saveLog: '✅ 保存', cancel: 'キャンセル',
+    signIn: 'サインイン', createAccount: 'アカウント作成', emailPlaceholder: 'メールアドレス',
+    signInSubtitle: 'アカウントにサインイン', createSubtitle: 'アカウントを作成',
+    noAccount: 'アカウントなし？新規登録', hasAccount: 'アカウントあり？サインイン',
+    termsNote: 'アカウント作成で利用規約に同意。14日間無料トライアル付き。',
+    hot: '▲ 注目', welcome: 'ようこそ', welcomeSubtitle: '全TCGのカードを検索',
   },
   es: {
     title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Sellado', barter: '🤝 Intercambio',
@@ -129,6 +198,29 @@ const TRANSLATIONS = {
     priceHistoryNote: 'Datos históricos via TCGPlayer API al lanzamiento.',
     sortBy: 'Ordenar:', sortName: 'Nombre', sortPrice: 'Precio', sortSet: 'Set',
     darkMode: 'Modo oscuro', appearance: 'Apariencia', noResults: 'Sin resultados.',
+    vendorDefaults: 'Precios vendedor por defecto', singlesCat: 'Singles', sealedProducts: 'Productos sellados', gradedCards: 'Cartas graduadas',
+    trackerTitle: 'Seguimiento de colección', trackerSubtitle: 'Toca un set para rastrear tus cartas.',
+    backToSets: '← Volver a sets', cards: 'cartas', ownedOf: 'poseídas',
+    saveTradeRecord: '💾 Guardar intercambio', clearTrade2: '🗑 Limpiar intercambio', viewSavedTrades: '▼ Ver intercambios', hideSavedTrades: '▲ Ocultar',
+    noSavedTrades: 'Sin intercambios guardados.', yourDeckLabel: 'Tú', theirDeckLabel: 'Vendedor',
+    totalEntries: 'Total entradas', totalItems: 'Total artículos', totalSpent: 'Total gastado',
+    given: 'DADO', received: 'RECIBIDO', deleteLog: '🗑 Eliminar', noLogs: 'Sin registros.',
+    logsSubtitle: 'Completa un intercambio o toca "Registrar compra".',
+    wishlistEmpty: 'Tu lista de deseos está vacía', wishlistSubtitle: 'Busca cartas y toca "Añadir a lista".',
+    market: 'Mercado', targetPrice: 'Precio objetivo ($)', atTarget: '✅ Objetivo alcanzado',
+    upcoming: 'PRÓXIMAMENTE', recentReleases: 'LANZAMIENTOS RECIENTES', trendingCards: '🔥 Cartas tendencia',
+    highestValued: 'Cartas más valoradas', priceMovers: '📊 Movimientos de precio',
+    gainers: '▲ Subida', losers: '▼ Bajada', refreshData: '🔄 Actualizar',
+    bulkTitle: '📋 Búsqueda masiva', bulkSubtitle: 'Ingresa un nombre de carta por línea.',
+    lookUpAll: '🔍 Buscar todas', found: 'Encontrado', marketTotal: 'Total mercado', yourTotal: 'Tu total',
+    shareBtn: 'Compartir', displayBtn: 'Mostrar', logPurchase: 'Registrar compra',
+    addToWishlist: 'Añadir a lista', pricePaid: 'Precio pagado ($)', source: 'Fuente', notes: 'Notas (opcional)',
+    saveLog: '✅ Guardar', cancel: 'Cancelar',
+    signIn: 'Iniciar sesión', createAccount: 'Crear cuenta', emailPlaceholder: 'tu@email.com',
+    signInSubtitle: 'Inicia sesión en tu cuenta', createSubtitle: 'Crea tu cuenta',
+    noAccount: '¿Sin cuenta? Regístrate', hasAccount: '¿Ya tienes cuenta? Inicia sesión',
+    termsNote: 'Al crear cuenta aceptas los términos. Prueba gratuita de 14 días incluida.',
+    hot: '▲ Tendencia', welcome: 'Bienvenido', welcomeSubtitle: 'Busca cartas de todos los TCG',
   },
   de: {
     title: 'TCG Market Master', singles: '🔍 Singles', sealed: '📦 Versiegelt', barter: '🤝 Tausch',
@@ -152,6 +244,29 @@ const TRANSLATIONS = {
     priceHistoryNote: 'Historische Daten via TCGPlayer API beim Start.',
     sortBy: 'Sortieren:', sortName: 'Name', sortPrice: 'Preis', sortSet: 'Set',
     darkMode: 'Dunkelmodus', appearance: 'Erscheinungsbild', noResults: 'Keine Ergebnisse.',
+    vendorDefaults: 'Standardverkaufspreise', singlesCat: 'Singles', sealedProducts: 'Versiegelte Produkte', gradedCards: 'Bewertete Karten',
+    trackerTitle: 'Set-Abschluss-Tracker', trackerSubtitle: 'Tippe auf ein Set um deine Karten zu verfolgen.',
+    backToSets: '← Zurück zu Sets', cards: 'Karten', ownedOf: 'besessen',
+    saveTradeRecord: '💾 Tausch speichern', clearTrade2: '🗑 Tausch löschen', viewSavedTrades: '▼ Gespeicherte Tausche', hideSavedTrades: '▲ Ausblenden',
+    noSavedTrades: 'Keine gespeicherten Tausche.', yourDeckLabel: 'Du', theirDeckLabel: 'Verkäufer',
+    totalEntries: 'Gesamteinträge', totalItems: 'Gesamtartikel', totalSpent: 'Gesamtausgaben',
+    given: 'GEGEBEN', received: 'ERHALTEN', deleteLog: '🗑 Löschen', noLogs: 'Keine Protokolle.',
+    logsSubtitle: 'Schließe einen Tausch ab oder tippe auf "Kauf protokollieren".',
+    wishlistEmpty: 'Deine Wunschliste ist leer', wishlistSubtitle: 'Suche Karten und tippe auf "Zur Wunschliste".',
+    market: 'Markt', targetPrice: 'Zielpreis ($)', atTarget: '✅ Ziel erreicht',
+    upcoming: 'DEMNÄCHST', recentReleases: 'AKTUELLE VERÖFFENTLICHUNGEN', trendingCards: '🔥 Trendkarten',
+    highestValued: 'Wertvollste Karten', priceMovers: '📊 Preisbewegungen',
+    gainers: '▲ Gewinner', losers: '▼ Verlierer', refreshData: '🔄 Aktualisieren',
+    bulkTitle: '📋 Massensuche', bulkSubtitle: 'Gib einen Kartennamen pro Zeile ein.',
+    lookUpAll: '🔍 Alle Karten suchen', found: 'Gefunden', marketTotal: 'Marktgesamt', yourTotal: 'Dein Gesamt',
+    shareBtn: 'Teilen', displayBtn: 'Anzeigen', logPurchase: 'Kauf protokollieren',
+    addToWishlist: 'Zur Wunschliste', pricePaid: 'Bezahlter Preis ($)', source: 'Quelle', notes: 'Notizen (optional)',
+    saveLog: '✅ Speichern', cancel: 'Abbrechen',
+    signIn: 'Anmelden', createAccount: 'Konto erstellen', emailPlaceholder: 'ihre@email.de',
+    signInSubtitle: 'In Ihr Konto anmelden', createSubtitle: 'Konto erstellen',
+    noAccount: 'Kein Konto? Registrieren', hasAccount: 'Bereits ein Konto? Anmelden',
+    termsNote: 'Mit Kontoerstellung stimmen Sie den Bedingungen zu. 14 Tage kostenlose Testversion.',
+    hot: '▲ Trend', welcome: 'Willkommen', welcomeSubtitle: 'Suche Karten aller TCGs',
   },
 };
 
@@ -1473,7 +1588,7 @@ const FRANCHISES = [
           <Text style={{ fontSize: 40, marginBottom: 10 }}>🃏</Text>
           <Text style={{ color: theme.text, fontSize: 28, fontWeight: 'bold' }}>TCG Market Master</Text>
           <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 6 }}>
-            {authMode === 'login' ? 'Sign in to your account' : 'Create your account'}
+            {authMode === 'login' ? t.signInSubtitle : t.createSubtitle}
           </Text>
         </View>
 
@@ -1487,7 +1602,7 @@ const FRANCHISES = [
           <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6 }}>Email</Text>
           <TextInput
             style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 10, padding: 14, color: theme.text, marginBottom: 16, fontSize: 16 }}
-            placeholder="your@email.com"
+            placeholder={t.emailPlaceholder}
             placeholderTextColor={theme.textMuted}
             value={authEmail}
             onChangeText={setAuthEmail}
@@ -1514,7 +1629,7 @@ const FRANCHISES = [
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-                {authMode === 'login' ? 'Sign In' : 'Create Account'}
+                {authMode === 'login' ? t.signIn : t.createAccount}
               </Text>
             )}
           </TouchableOpacity>
@@ -1524,13 +1639,13 @@ const FRANCHISES = [
             style={{ alignItems: 'center', padding: 12 }}
           >
             <Text style={{ color: theme.accent, fontSize: 14 }}>
-              {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              {authMode === 'login' ? t.noAccount : t.hasAccount}
             </Text>
           </TouchableOpacity>
 
           {authMode === 'signup' && (
             <Text style={{ color: theme.textMuted, fontSize: 11, textAlign: 'center', marginTop: 12 }}>
-              By creating an account you agree to our Terms of Service. 14-day free trial included.
+              {t.termsNote}
             </Text>
           )}
         </View>
@@ -1572,10 +1687,10 @@ const FRANCHISES = [
           </ScrollView>
           {isPhase2Language && <Text style={[styles.phase2Note, { color: theme.variantBorder }]}>{t.phase2Note}</Text>}
 
-          <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>Vendor Price Defaults</Text>
+          <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.vendorDefaults}</Text>
 
           <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Singles</Text>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.singles}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{percentage}%</Text>
           </View>
           <View style={styles.sliderRow}>
@@ -1585,7 +1700,7 @@ const FRANCHISES = [
           </View>
 
           <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Sealed Products</Text>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.sealedProducts}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{sealedPercentage}%</Text>
           </View>
           <View style={styles.sliderRow}>
@@ -1595,7 +1710,7 @@ const FRANCHISES = [
           </View>
 
           <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.darkModeLabel, { color: theme.text }]}>Graded Cards</Text>
+            <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.gradedCards}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{gradedPercentage}%</Text>
           </View>
           <View style={styles.sliderRow}>
@@ -1725,102 +1840,112 @@ const FRANCHISES = [
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
         {renderHeader()}
         {renderTabBar()}
-        <ScrollView>
-          <View style={styles.barterContainer}>
-            <View style={styles.deckColumn}>
-              <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.yourDeck} ({myDeck.length})</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+
+          {/* Two decks side by side */}
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16, alignItems: 'flex-start' }}>
+            <View style={{ flex: 1, marginTop: 0 }}>
+
+            {/* YOUR DECK */}
+            
+              <View style={{ borderRadius: 12, padding: 12, alignItems: 'center', marginBottom: 10, height: 70, justifyContent: 'center', backgroundColor: '#2563EB' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>You</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 22, fontWeight: '800', marginTop: 2 }}>${myTotal.toFixed(2)}</Text>
+              </View>
               {myDeck.map((entry) => (
-                <TouchableOpacity key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}
+                <TouchableOpacity key={entry.id}
+                  style={{ backgroundColor: theme.card, borderRadius: 12, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}
                   onPress={() => { selectCard(entry.card); setScreen(SCREENS.CARD); }}>
-                  <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
-                    <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{entry.card.set?.name}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
-                      <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                        <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: 'bold' }}>{entry.condition}</Text>
-                      </View>
-                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * ((entry.id.includes('my') ? myPercentage : theirPercentage) / 100)).toFixed(2)}</Text>
-                    </View>
+                  <Image source={{ uri: entry.card.images.small }} style={{ width: 72, height: 100, borderRadius: 8, marginBottom: 8 }} />
+                  <Text style={{ color: theme.text, fontWeight: '700', fontSize: 13, textAlign: 'center' }} numberOfLines={2}>{entry.card.name}</Text>
+                  <Text style={{ color: theme.accent, fontWeight: '800', fontSize: 16, marginTop: 4 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * (myPercentage / 100)).toFixed(2)}</Text>
+                  <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 4 }}>
+                    <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: '600' }}>{entry.condition}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => removeFromDeck('my', entry.id)} style={{ padding: 8 }}>
-                    <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
+                  <TouchableOpacity onPress={() => removeFromDeck('my', entry.id)}
+                    style={{ marginTop: 8, backgroundColor: '#e6394620', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 6 }}>
+                    <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '700' }}>✕ Remove</Text>
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity style={[styles.addCardButton, { borderColor: theme.accent }]} onPress={() => { setBarterTarget('my'); setScreen(SCREENS.BARTER_SEARCH); }}>
-                <Text style={[styles.addCardButtonText, { color: theme.accent }]}>{t.addCard}</Text>
+              <TouchableOpacity
+                style={{ borderWidth: 2, borderColor: theme.accent, borderStyle: 'dashed', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 12 }}
+                onPress={() => { setBarterTarget('my'); setScreen(SCREENS.BARTER_SEARCH); }}>
+                <Text style={{ color: theme.accent, fontSize: 24 }}>+</Text>
+                <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{t.addCard}</Text>
               </TouchableOpacity>
-              <Text style={[styles.percentageValue, { color: theme.accent }]}>{myPercentage}%</Text>
-              <View style={styles.sliderRow}>
-                <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
-                <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={1} value={myPercentage} onValueChange={(val) => setMyPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
-                <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+              <View style={{ alignItems: 'center', marginTop: 10, width: '100%' }}>
+                <Text style={{ color: theme.accent, fontWeight: '800', fontSize: 24, marginBottom: 4 }}>{myPercentage}%</Text>
+                <Slider style={{ width: '100%', height: 60 }} minimumValue={10} maximumValue={100} step={5} value={myPercentage} onValueChange={(val) => setMyPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
               </View>
-              <Text style={[styles.deckTotal, { color: theme.text }]}>{t.total} ${myTotal.toFixed(2)}</Text>
             </View>
-            <View style={[styles.deckDivider, { backgroundColor: theme.cardBorder }]} />
-            <View style={styles.deckColumn}>
-              <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.theirDeck} ({theirDeck.length})</Text>
+
+            {/* Divider */}
+            <View style={{ width: 1, backgroundColor: theme.cardBorder }} />
+
+            {/* THEIR DECK */}
+            <View style={{ flex: 1, marginTop: 0 }}>
+              <View style={{ borderRadius: 12, padding: 12, alignItems: 'center', marginBottom: 10, height: 70, justifyContent: 'center', backgroundColor: '#E63946' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Vendor</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 22, fontWeight: '800', marginTop: 2 }}>${theirTotal.toFixed(2)}</Text>
+              </View>
               {theirDeck.map((entry) => (
-                <TouchableOpacity key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}
+                <TouchableOpacity key={entry.id}
+                  style={{ backgroundColor: theme.card, borderRadius: 12, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}
                   onPress={() => { selectCard(entry.card); setScreen(SCREENS.CARD); }}>
-                  <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
-                    <Text style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{entry.card.set?.name}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
-                      <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                        <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: 'bold' }}>{entry.condition}</Text>
-                      </View>
-                      <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * (theirPercentage / 100)).toFixed(2)}</Text>
-                    </View>
+                  <Image source={{ uri: entry.card.images.small }} style={{ width: 72, height: 100, borderRadius: 8, marginBottom: 8 }} />
+                  <Text style={{ color: theme.text, fontWeight: '700', fontSize: 13, textAlign: 'center' }} numberOfLines={2}>{entry.card.name}</Text>
+                  <Text style={{ color: theme.accent, fontWeight: '800', fontSize: 16, marginTop: 4 }}>${(entry.price * (entry.itemType === 'raw' ? CONDITIONS[entry.conditionIndex]?.multiplier || 1 : 1) * (theirPercentage / 100)).toFixed(2)}</Text>
+                  <View style={{ backgroundColor: theme.chip, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 4 }}>
+                    <Text style={{ color: theme.chipText, fontSize: 11, fontWeight: '600' }}>{entry.condition}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => removeFromDeck('their', entry.id)} style={{ padding: 8 }}>
-                    <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
+                  <TouchableOpacity onPress={() => removeFromDeck('their', entry.id)}
+                    style={{ marginTop: 8, backgroundColor: '#e6394620', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 6 }}>
+                    <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '700' }}>✕ Remove</Text>
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity style={[styles.addCardButton, { borderColor: theme.accent }]} onPress={() => { setBarterTarget('their'); setScreen(SCREENS.BARTER_SEARCH); }}>
-                <Text style={[styles.addCardButtonText, { color: theme.accent }]}>{t.addCard}</Text>
+              <TouchableOpacity
+                style={{ borderWidth: 2, borderColor: theme.accent, borderStyle: 'dashed', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 12 }}
+                onPress={() => { setBarterTarget('their'); setScreen(SCREENS.BARTER_SEARCH); }}>
+                <Text style={{ color: theme.accent, fontSize: 24 }}>+</Text>
+                <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{t.addCard}</Text>
               </TouchableOpacity>
-              <Text style={[styles.percentageValue, { color: theme.accent }]}>{theirPercentage}%</Text>
-              <View style={styles.sliderRow}>
-                <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
-                <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={1} value={theirPercentage} onValueChange={(val) => setTheirPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
-                <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+              <View style={{ alignItems: 'center', marginTop: 10, width: '100%' }}>
+                <Text style={{ color: theme.accent, fontWeight: '800', fontSize: 24, marginBottom: 4 }}>{theirPercentage}%</Text>
+                <Slider style={{ width: '100%', height: 60 }} minimumValue={10} maximumValue={100} step={5} value={theirPercentage} onValueChange={(val) => setTheirPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
               </View>
-              <Text style={[styles.deckTotal, { color: theme.text }]}>{t.total} ${theirTotal.toFixed(2)}</Text>
             </View>
           </View>
-          <View style={[styles.deltaBox, { backgroundColor: delta === 0 ? theme.deltaClean : delta > 0 ? theme.deltaPos : theme.deltaNeg }]}>
-            {delta === 0 ? (
-              <Text style={[styles.deltaText, { color: theme.text }]}>{t.cleanTrade}</Text>
-            ) : delta > 0 ? (
-              <Text style={[styles.deltaText, { color: theme.text }]}>{t.theyAdd} ${Math.abs(delta).toFixed(2)} {t.cash}</Text>
-            ) : (
-              <Text style={[styles.deltaText, { color: theme.text }]}>{t.youAdd} ${Math.abs(delta).toFixed(2)} {t.cash}</Text>
-            )}
-          </View>
-          <TouchableOpacity style={[styles.clearButton, { borderColor: theme.clearButton }]} onPress={() => { setMyDeck([]); setTheirDeck([]); }}>
-            <Text style={[styles.clearButtonText, { color: theme.textMuted }]}>{t.clearTrade}</Text>
+
+          {/* Delta — only show when there's a difference */}
+          {Math.abs(delta) > 0.01 && (
+            <View style={{ backgroundColor: delta > 0 ? '#2a2500' : '#2a1215', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ color: theme.textMuted, fontSize: 13, marginBottom: 4 }}>{delta > 0 ? 'They need to add' : 'You need to add'}</Text>
+              <Text style={{ color: delta > 0 ? '#f4a261' : theme.accent, fontWeight: '800', fontSize: 36 }}>${Math.abs(delta).toFixed(2)}</Text>
+            </View>
+          )}
+
+          {/* Action buttons */}
+          <TouchableOpacity style={{ backgroundColor: theme.accent, borderRadius: 14, padding: 18, alignItems: 'center', marginBottom: 10 }} onPress={saveTrade}>
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>{t.saveTradeRecord}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.clearButton, { borderColor: theme.accent }]} onPress={saveTrade}>
-            <Text style={[styles.clearButtonText, { color: theme.accent }]}>💾 Save Trade Record</Text>
+          <TouchableOpacity style={{ backgroundColor: theme.chip, borderRadius: 14, padding: 16, alignItems: 'center', marginBottom: 10 }} onPress={() => { setMyDeck([]); setTheirDeck([]); }}>
+            <Text style={{ color: theme.textMuted, fontWeight: '700', fontSize: 15 }}>{t.clearTrade2}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.clearButton, { borderColor: theme.cardBorder }]} onPress={() => setShowSavedTrades(!showSavedTrades)}>
-            <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>{showSavedTrades ? '▲ Hide Saved Trades' : '▼ View Saved Trades'}</Text>
+          <TouchableOpacity style={{ borderWidth: 1, borderColor: theme.cardBorder, borderRadius: 14, padding: 14, alignItems: 'center', marginBottom: 10 }} onPress={() => setShowSavedTrades(!showSavedTrades)}>
+            <Text style={{ color: theme.textSecondary, fontWeight: '600' }}>{showSavedTrades ? t.hideSavedTrades : t.viewSavedTrades}</Text>
           </TouchableOpacity>
 
           {showSavedTrades && (
-            <View style={{ marginTop: 10 }}>
+            <View style={{ marginTop: 10, marginBottom: 30 }}>
               {savedTrades.length === 0 ? (
-                <Text style={{ color: theme.textMuted, textAlign: 'center', marginVertical: 20 }}>No saved trades yet.</Text>
+                <Text style={{ color: theme.textMuted, textAlign: 'center', marginVertical: 20 }}>{t.noSavedTrades}</Text>
               ) : (
                 savedTrades.map((trade) => (
-                  <View key={trade.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+                  <View key={trade.id} style={{ backgroundColor: theme.card, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder, flexDirection: 'row' }}>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: theme.text, fontWeight: 'bold', marginBottom: 4 }}>{trade.timestamp}</Text>
                       <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Your deck: ${trade.myTotal.toFixed(2)} ({trade.myDeck.length} cards)</Text>
@@ -1830,7 +1955,7 @@ const FRANCHISES = [
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => deleteSavedTrade(trade.id)}>
-                      <Text style={{ color: theme.textMuted, fontSize: 18, paddingHorizontal: 8 }}>🗑</Text>
+                      <Text style={{ color: theme.textMuted, fontSize: 20, paddingHorizontal: 8 }}>🗑</Text>
                     </TouchableOpacity>
                   </View>
                 ))
@@ -1896,8 +2021,8 @@ const FRANCHISES = [
         {renderHeader()}
         {renderTabBar()}
         <ScrollView>
-          <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>📋 Bulk Lookup</Text>
-          <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 12 }}>Enter one card name per line. The app will look up the best match and price for each.</Text>
+          <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>{t.bulkTitle}</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 12 }}>{t.bulkSubtitle}</Text>
 
           <TextInput
             style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 10, padding: 12, color: theme.text, height: 160, textAlignVertical: 'top', marginBottom: 12, fontSize: 14 }}
@@ -1912,7 +2037,7 @@ const FRANCHISES = [
             style={{ backgroundColor: theme.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 16 }}
             onPress={bulkSearch}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>🔍 Look Up All Cards</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t.lookUpAll}</Text>
           </TouchableOpacity>
 
           {bulkLoading && (
@@ -1926,15 +2051,15 @@ const FRANCHISES = [
             <>
               <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
                 <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
-                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Found</Text>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>{t.found}</Text>
                   <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 20 }}>{bulkResults.filter(r => r.found).length}/{bulkResults.length}</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
-                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Market Total</Text>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>{t.marketTotal}</Text>
                   <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 20 }}>${totalValue.toFixed(2)}</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
-                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>Your Total ({percentage}%)</Text>
+                  <Text style={{ color: theme.textMuted, fontSize: 11 }}>{t.yourTotal} ({percentage}%)</Text>
                   <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 20 }}>${vendorTotal.toFixed(2)}</Text>
                 </View>
               </View>
@@ -1991,11 +2116,11 @@ const FRANCHISES = [
           {/* Summary */}
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
-              <Text style={{ color: theme.textMuted, fontSize: 12 }}>Total Entries</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12 }}>{t.totalEntries}</Text>
               <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 24 }}>{purchaseLogs.length}</Text>
             </View>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
-              <Text style={{ color: theme.textMuted, fontSize: 12 }}>Total Items</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12 }}>{t.totalSpent}</Text>
               <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 24 }}>{totalItems}</Text>
             </View>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: theme.cardBorder, alignItems: 'center' }}>
@@ -2007,8 +2132,8 @@ const FRANCHISES = [
           {purchaseLogs.length === 0 ? (
             <View style={{ alignItems: 'center', marginTop: 40 }}>
               <Text style={{ fontSize: 40 }}>📋</Text>
-              <Text style={{ color: theme.textMuted, fontSize: 16, marginTop: 10 }}>No logs yet.</Text>
-              <Text style={{ color: theme.textMuted, fontSize: 13, marginTop: 6 }}>Complete a trade or tap "Log Purchase" on any card.</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 16, marginTop: 10 }}>{t.noLogs}</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 13, marginTop: 6 }}>{t.logsSubtitle}</Text>
             </View>
           ) : (
             purchaseLogs.map((log) => {
@@ -2047,7 +2172,7 @@ const FRANCHISES = [
                         <>
                           {log.given?.length > 0 && (
                             <>
-                              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>GIVEN</Text>
+                              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>{t.given}</Text>
                               {log.given.map((item, i) => (
                                 <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                                   {item.image && <Image source={{ uri: item.image }} style={{ width: 36, height: 50, borderRadius: 4, marginRight: 8 }} />}
@@ -2062,7 +2187,7 @@ const FRANCHISES = [
                           )}
                           {log.received?.length > 0 && (
                             <>
-                              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8, marginTop: 8 }}>RECEIVED</Text>
+                              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8, marginTop: 8 }}>{t.received}</Text>
                               {log.received.map((item, i) => (
                                 <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                                   {item.image && <Image source={{ uri: item.image }} style={{ width: 36, height: 50, borderRadius: 4, marginRight: 8 }} />}
@@ -2078,7 +2203,7 @@ const FRANCHISES = [
                         </>
                       ) : (
                         <>
-                          {log.source && <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 8 }}>Source: {log.source}</Text>}
+                          {log.source && <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 8 }}>{t.source}: {log.source}</Text>}
                           {log.notes ? <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 8 }}>📝 {log.notes}</Text> : null}
                           {log.items?.map((item, i) => (
                             <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -2093,7 +2218,7 @@ const FRANCHISES = [
                         </>
                       )}
                       <TouchableOpacity onPress={() => deletePurchaseLog(log.id)} style={{ marginTop: 8, alignItems: 'center', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: theme.clearButton }}>
-                        <Text style={{ color: theme.textMuted }}>🗑 Delete this log</Text>
+                        <Text style={{ color: theme.textMuted }}>{t.deleteLog}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -2116,7 +2241,7 @@ const FRANCHISES = [
         {selectedSet ? (
           <>
             <TouchableOpacity onPress={() => { setSelectedSet(null); setSetCards([]); }}>
-              <Text style={[styles.back, { color: theme.accent }]}>← Back to Sets</Text>
+              <Text style={[styles.back, { color: theme.accent }]}>{t.backToSets}</Text>
             </TouchableOpacity>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <Image source={{ uri: selectedSet.images?.logo }} style={{ width: 80, height: 32, resizeMode: 'contain', marginRight: 10 }} />
@@ -2157,8 +2282,8 @@ const FRANCHISES = [
           </>
         ) : (
           <ScrollView>
-            <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>📋 Set Completion Tracker</Text>
-            <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 16 }}>Tap a set to track which cards you own.</Text>
+            <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>📋 {t.trackerTitle}</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 16 }}>{t.trackerSubtitle}</Text>
             {sets.length === 0 ? (
               <ActivityIndicator size="large" color={theme.accent} />
             ) : (
@@ -2203,7 +2328,7 @@ const FRANCHISES = [
 
           {upcomingSets.length > 0 && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>UPCOMING</Text>
+              <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>{t.upcoming}</Text>
               {upcomingSets.slice(0, 5).map((set) => {
                 const release = new Date(set.releaseDate);
                 const daysUntil = Math.ceil((release - today) / (1000 * 60 * 60 * 24));
@@ -2224,7 +2349,7 @@ const FRANCHISES = [
             </View>
           )}
 
-          <Text style={{ color: theme.textSecondary, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>RECENT RELEASES</Text>
+          <Text style={{ color: theme.textSecondary, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>{t.recentReleases}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               {sets.slice(0, 10).map((set) => (
@@ -2240,7 +2365,7 @@ const FRANCHISES = [
 
           {/* TRENDING CARDS */}
           <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12 }]}>🔥 Trending Cards</Text>
-          <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 12 }}>Highest valued cards right now</Text>
+          <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 12 }}>{t.highestValued}</Text>
           {discoverLoading ? (
             <ActivityIndicator size="large" color={theme.accent} />
           ) : (
@@ -2258,7 +2383,7 @@ const FRANCHISES = [
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 18 }}>${price.toFixed(2)}</Text>
-                      <Text style={{ color: '#4caf50', fontSize: 11, marginTop: 2 }}>▲ Hot</Text>
+                      <Text style={{ color: '#4caf50', fontSize: 11, marginTop: 2 }}>{t.hot}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -2270,7 +2395,7 @@ const FRANCHISES = [
           <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 8 }]}>📊 Price Movers</Text>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#4caf50' }}>
-              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ Gainers</Text>
+              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>{t.gainers}</Text>
               {trendingCards.slice(0, 5).map((card) => {
                 const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
                 return (
@@ -2296,7 +2421,7 @@ const FRANCHISES = [
           </View>
 
           <TouchableOpacity style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: theme.accent, alignItems: 'center', marginBottom: 30 }} onPress={fetchDiscoverData}>
-            <Text style={{ color: theme.accent, fontWeight: 'bold' }}>🔄 Refresh Data</Text>
+            <Text style={{ color: theme.accent, fontWeight: 'bold' }}>{t.refreshData}</Text>
           </TouchableOpacity>
 
         </ScrollView>
@@ -2315,8 +2440,8 @@ const FRANCHISES = [
         {wishlist.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 60 }}>
             <Text style={{ fontSize: 60, marginBottom: 16 }}>⭐</Text>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.text, marginBottom: 8 }}>Your wishlist is empty</Text>
-            <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center' }}>Search for cards or sealed products and tap "Add to Wishlist" to save them here.</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.text, marginBottom: 8 }}>{t.wishlistEmpty}</Text>
+            <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center' }}>{t.wishlistSubtitle}</Text>
           </View>
         ) : (
           <FlatList
@@ -2458,7 +2583,7 @@ const FRANCHISES = [
                 onPress={() => addSealedToWishlist(sealedProduct)}
               >
                 <Text style={{ fontSize: 18 }}>⭐</Text>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Add to Wishlist</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t.addToWishlist}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -2569,9 +2694,9 @@ const FRANCHISES = [
               
               {/* Top text */}
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginBottom: 4, textAlign: 'center' }}>Welcome</Text>
+                <Text style={{ fontSize: 26, fontWeight: '700', color: theme.text, marginBottom: 4, textAlign: 'center' }}>{t.welcome}</Text>
                 <Text style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 20 }}>
-                  Search any card across all TCGs
+                  {t.welcomeSubtitle}
                 </Text>
               </View>
 
@@ -2684,14 +2809,14 @@ const FRANCHISES = [
                   onPress={() => shareCard(selectedCard)}
                 >
                   <Text style={{ fontSize: 16, marginRight: 6 }}>📤</Text>
-                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>Share</Text>
+                  <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }}>{t.shareBtn}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#000', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
                   onPress={() => setScreen(SCREENS.DISPLAY)}
                 >
                   <Text style={{ fontSize: 16, marginRight: 6 }}>🖥️</Text>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Display</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>{t.displayBtn}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.accentLight, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}
@@ -2705,14 +2830,14 @@ const FRANCHISES = [
                   }}
                 >
                   <Text style={{ fontSize: 16, marginRight: 6 }}>💰</Text>
-                  <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>Log Purchase</Text>
+                  <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 14 }}>{t.logPurchase}</Text>
                 </TouchableOpacity>
               </View>
 
               {showAddLog && logCard && (
                 <View style={{ width: '100%', backgroundColor: theme.card, borderRadius: 12, padding: 16, marginTop: 12, borderWidth: 1, borderColor: theme.accent }}>
                   <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16, marginBottom: 12 }}>💰 Log Purchase</Text>
-                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Price Paid ($)</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>{t.pricePaid}</Text>
                   <TextInput
                     style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 8, padding: 10, color: theme.text, marginBottom: 10 }}
                     placeholder="0.00"
@@ -2730,7 +2855,7 @@ const FRANCHISES = [
                       </TouchableOpacity>
                     ))}
                   </View>
-                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>Notes (optional)</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 4 }}>{t.notes}</Text>
                   <TextInput
                     style={{ backgroundColor: theme.input, borderWidth: 1, borderColor: theme.inputBorder, borderRadius: 8, padding: 10, color: theme.text, marginBottom: 12 }}
                     placeholder="e.g. bought from collector fair"
@@ -2743,13 +2868,13 @@ const FRANCHISES = [
                       style={{ flex: 1, padding: 12, backgroundColor: theme.accent, borderRadius: 8, alignItems: 'center' }}
                       onPress={() => { addPurchaseLog(logCard, logPrice, logCondition, logSource, logNotes); setShowAddLog(false); }}
                     >
-                      <Text style={{ color: '#fff', fontWeight: 'bold' }}>✅ Save Log</Text>
+                      <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t.saveLog}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={{ flex: 1, padding: 12, backgroundColor: theme.chip, borderRadius: 8, alignItems: 'center' }}
                       onPress={() => setShowAddLog(false)}
                     >
-                      <Text style={{ color: theme.textSecondary, fontWeight: 'bold' }}>Cancel</Text>
+                      <Text style={{ color: theme.textSecondary, fontWeight: 'bold' }}>{t.cancel}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -2907,7 +3032,7 @@ const FRANCHISES = [
               onPress={() => addToWishlist(selectedCard)}
             >
               <Text style={{ fontSize: 18 }}>⭐</Text>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Add to Wishlist</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t.addToWishlist}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
