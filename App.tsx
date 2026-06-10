@@ -1559,7 +1559,8 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
             <View style={styles.deckColumn}>
               <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.yourDeck} ({myDeck.length})</Text>
               {myDeck.map((entry) => (
-                <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                <TouchableOpacity key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}
+                  onPress={() => { selectCard(entry.card); setScreen(SCREENS.CARD); }}>
                   <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
@@ -1574,7 +1575,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
                   <TouchableOpacity onPress={() => removeFromDeck('my', entry.id)} style={{ padding: 8 }}>
                     <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
                   </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               ))}
               <TouchableOpacity style={[styles.addCardButton, { borderColor: theme.accent }]} onPress={() => { setBarterTarget('my'); setScreen(SCREENS.BARTER_SEARCH); }}>
                 <Text style={[styles.addCardButtonText, { color: theme.accent }]}>{t.addCard}</Text>
@@ -1591,7 +1592,8 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
             <View style={styles.deckColumn}>
               <Text style={[styles.deckTitle, { color: theme.accent }]}>{t.theirDeck} ({theirDeck.length})</Text>
               {theirDeck.map((entry) => (
-                <View key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                <TouchableOpacity key={entry.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.deckCard, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}
+                  onPress={() => { selectCard(entry.card); setScreen(SCREENS.CARD); }}>
                   <Image source={{ uri: entry.card.images.small }} style={{ width: 44, height: 62, borderRadius: 4 }} />
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 14 }} numberOfLines={1}>{entry.card.name}</Text>
@@ -1606,7 +1608,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
                   <TouchableOpacity onPress={() => removeFromDeck('their', entry.id)} style={{ padding: 8 }}>
                     <Text style={{ color: theme.textMuted, fontSize: 20 }}>✕</Text>
                   </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               ))}
               <TouchableOpacity style={[styles.addCardButton, { borderColor: theme.accent }]} onPress={() => { setBarterTarget('their'); setScreen(SCREENS.BARTER_SEARCH); }}>
                 <Text style={[styles.addCardButtonText, { color: theme.accent }]}>{t.addCard}</Text>
@@ -2329,7 +2331,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
                 placeholderTextColor={theme.textMuted}
                 value={query}
                 onChangeText={setQuery}
-                onSubmitEditing={() => searchCards()}
+                onSubmitEditing={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
                 returnKeyType="search"
               />
               <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.chip }]} onPress={openCamera}>
