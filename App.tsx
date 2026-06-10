@@ -345,6 +345,10 @@ const [authPassword, setAuthPassword] = useState('');
 const [authError, setAuthError] = useState('');
 const [supabaseSyncing, setSupabaseSyncing] = useState(false);
 const [bulkInput, setBulkInput] = useState('');
+const [catalogLoading, setCatalogLoading] = useState(false);
+const [catalogProgress, setCatalogProgress] = useState('');
+const [catalogReady, setCatalogReady] = useState(false);
+const [localCatalog, setLocalCatalog] = useState([]);
 const [bulkResults, setBulkResults] = useState([]);
 const [bulkLoading, setBulkLoading] = useState(false);
 const [bulkProgress, setBulkProgress] = useState('');
@@ -374,10 +378,11 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     loadPurchaseLogs();
     getOrCreateDeviceId().then(() => loadFromSupabase());
     checkSession();
+    loadLocalCatalog().then(loaded => { if (!loaded) buildLocalCatalog(); });
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
-    if (query.trim().length >= 1) {
+    if (query.trim().length >= 1 && results.length === 0 && !loading) {
       searchSuggestTimeout.current = setTimeout(() => {
         fetchSearchSuggestions(query);
       }, 300);
@@ -385,7 +390,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       setSearchSuggestions([]);
       setShowSearchSuggestions(false);
     }
-  }, [query]);
+  }, [query, results, loading]);
   // Auto-sync to Supabase when important data changes
   useEffect(() => {
     if (deviceId && purchaseLogs.length + Object.keys(ownedCards).length + wishlist.length > 0) {
@@ -490,6 +495,92 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   };
 
  
+  const buildLocalCatalog = async () => {
+    setCatalogLoading(true);
+    setCatalogProgress('Starting catalog download...');
+    try {
+      const allCards = [];
+      let page = 1;
+      let totalCount = null;
+      while (true) {
+        setCatalogProgress(`Downloading cards... ${allCards.length}${totalCount ? ' of ' + totalCount : ''}`);
+        const response = await fetch(
+          `https://api.pokemontcg.io/v2/cards?pageSize=250&page=${page}&select=id,name,set,number,rarity,images,tcgplayer,subtypes`
+        );
+        const data = await response.json();
+        if (!totalCount) totalCount = data.totalCount;
+        const cards = data.data || [];
+        if (cards.length === 0) break;
+        allCards.push(...cards);
+        if (allCards.length >= totalCount) break;
+        page++;
+      }
+      setCatalogProgress('Saving catalog...');
+      // Save in chunks to avoid AsyncStorage limits
+      const chunkSize = 500;
+      for (let i = 0; i < allCards.length; i += chunkSize) {
+        const chunk = allCards.slice(i, i + chunkSize);
+        await AsyncStorage.setItem(`catalog_chunk_${Math.floor(i / chunkSize)}`, JSON.stringify(chunk));
+      }
+      await AsyncStorage.setItem('catalog_meta', JSON.stringify({
+        totalCards: allCards.length,
+        chunks: Math.ceil(allCards.length / chunkSize),
+        lastUpdated: Date.now(),
+      }));
+      setLocalCatalog(allCards);
+      setCatalogReady(true);
+      setCatalogProgress('');
+    } catch (e) {
+      console.error('Catalog build error', e);
+      setCatalogProgress('Download failed. Using live search.');
+    }
+    setCatalogLoading(false);
+  };
+
+  const loadLocalCatalog = async () => {
+    try {
+      const meta = await AsyncStorage.getItem('catalog_meta');
+      if (!meta) return false;
+      const { totalCards, chunks, lastUpdated } = JSON.parse(meta);
+      // Refresh catalog if older than 7 days
+      if (Date.now() - lastUpdated > 7 * 24 * 60 * 60 * 1000) {
+        buildLocalCatalog();
+        return false;
+      }
+      const allCards = [];
+      for (let i = 0; i < chunks; i++) {
+        const chunk = await AsyncStorage.getItem(`catalog_chunk_${i}`);
+        if (chunk) allCards.push(...JSON.parse(chunk));
+      }
+      setLocalCatalog(allCards);
+      setCatalogReady(true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const searchLocalCatalog = (searchQuery) => {
+    const lower = searchQuery.toLowerCase().trim();
+    const words = lower.split(' ').filter(w => w.length > 0);
+    const results = [];
+    for (let i = 0; i < localCatalog.length; i++) {
+      const card = localCatalog[i];
+      const name = card.name?.toLowerCase() || '';
+      // Fast name match first
+      if (name.includes(lower)) {
+        results.push(card);
+        if (results.length >= 250) break;
+        continue;
+      }
+      // Word match
+      if (words.every(w => name.includes(w))) {
+        results.push(card);
+        if (results.length >= 250) break;
+      }
+    }
+    return results;
+  };
   const fetchSearchSuggestions = async (text) => {
     if (!text || text.trim().length < 1) {
       setSearchSuggestions([]);
@@ -712,9 +803,15 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState('');
 
  const fetchAllCards = async (searchQuery) => {
-    // Clean query - remove characters that break the API query syntax
+    // Use local catalog if available — instant search
+    if (catalogReady && localCatalog.length > 0) {
+      const results = searchLocalCatalog(searchQuery);
+      setResults(results);
+      setLoading(false);
+      return results;
+    }
+    // Fall back to API if catalog not ready
     const cleanQuery = searchQuery.replace(/[":!@#$%^&*()+=\[\]{}|\\<>?]/g, ' ').replace(/\s+/g, ' ').trim();
-    // Fetch first page immediately and show results, then load rest in background
     const firstResponse = await fetch(
       `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(cleanQuery)}*&pageSize=250&page=1&orderBy=name`
     );
@@ -722,12 +819,8 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     const firstData = await firstResponse.json();
     const totalCount = firstData.totalCount || 0;
     let allCards = firstData.data || [];
-    
-    // Show first results immediately
     setResults([...allCards]);
     setLoading(false);
-    
-    // Load remaining pages in background if needed
     if (totalCount > 250) {
       let page = 2;
       while (allCards.length < totalCount && page <= 20) {
@@ -742,7 +835,6 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
       }
       setLoadingProgress('');
     }
-    
     return allCards;
   };
 
@@ -1291,6 +1383,22 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     );
   };
 
+  if (catalogLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.bg, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <Text style={{ fontSize: 48, marginBottom: 20 }}>🃏</Text>
+        <Text style={{ color: theme.text, fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>TCG Market Master</Text>
+        <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 40, textAlign: 'center' }}>
+          Setting up your card catalog for instant search...{'\n'}This only happens once.
+        </Text>
+        <ActivityIndicator size="large" color={theme.accent} style={{ marginBottom: 20 }} />
+        <Text style={{ color: theme.textMuted, fontSize: 13, textAlign: 'center' }}>{catalogProgress}</Text>
+        <View style={{ width: '100%', height: 4, backgroundColor: theme.cardBorder, borderRadius: 2, marginTop: 20 }}>
+          <View style={{ height: 4, backgroundColor: theme.accent, borderRadius: 2, width: catalogProgress.includes('of') ? `${Math.min(100, parseInt(catalogProgress.match(/(\d+) of (\d+)/)?.[1] || 0) / parseInt(catalogProgress.match(/(\d+) of (\d+)/)?.[2] || 1) * 100)}%` : '10%' }} />
+        </View>
+      </View>
+    );
+  }
   if (showAuth) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg, justifyContent: 'center' }]}>
@@ -2056,7 +2164,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
           <Text style={{ color: theme.textSecondary, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>RECENT RELEASES</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              {recentSets.slice(0, 10).map((set) => (
+              {sets.slice(0, 10).map((set) => (
                 <View key={set.id} style={{ width: 120, backgroundColor: theme.card, borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: theme.cardBorder }}>
                   <Image source={{ uri: set.images?.logo }} style={{ width: 100, height: 40, resizeMode: 'contain', marginBottom: 6 }} />
                   <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 11, textAlign: 'center' }} numberOfLines={2}>{set.name}</Text>
@@ -2378,7 +2486,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
             <View style={{ alignItems: 'center', paddingTop: 40, paddingHorizontal: 20 }}>
               <Text style={{ fontSize: 60, marginBottom: 16 }}>🃏</Text>
               
-              <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 8, textAlign: 'center' }}>Welcome to TCG Market Master</Text>
+              <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 8, textAlign: 'center' }}>Welcome</Text>
               <Text style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 30, lineHeight: 22 }}>Search any card, check live prices, evaluate trades and manage your barter sessions.</Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 30 }}>
                 <View style={{ alignItems: 'center', backgroundColor: theme.card, borderRadius: 12, padding: 16, flex: 1, borderWidth: 1, borderColor: theme.cardBorder }}>
