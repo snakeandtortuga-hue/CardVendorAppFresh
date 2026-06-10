@@ -479,20 +479,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     return usdPrice * exchangeRates[currencyCode];
   };
 
-  const fetchQuickSuggestions = async (text) => {
-    if (text.trim().length < 2) { setQuickSuggestions([]); setShowSuggestions(false); return; }
-    try {
-      const response = await fetch(
-        `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(text.trim())}*&pageSize=8&orderBy=name`
-      );
-      const data = await response.json();
-      if (data.data) {
-        const unique = [...new Map(data.data.map(c => [c.name, c])).values()].slice(0, 6);
-        setQuickSuggestions(unique);
-        setShowSuggestions(true);
-      }
-    } catch (e) {}
-  };
+  
 
  
   const buildLocalCatalog = async () => {
@@ -1321,6 +1308,7 @@ const [setCardsLoading, setSetCardsLoading] = useState(false);
     return `${CURRENCIES.find(c => c.code === code)?.symbol}${amount.toFixed(2)}`;
   };
 
+  
   const renderHeader = () => (
     <View style={{ marginBottom: 15 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
