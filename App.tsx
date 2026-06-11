@@ -479,6 +479,7 @@ const [setCards, setSetCards] = useState([]);
 const [setCardsLoading, setSetCardsLoading] = useState(false);
   const [ebayPrices, setEbayPrices] = useState({});
   const [selectedFranchise, setSelectedFranchise] = useState('pokemon');
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
 
 const FRANCHISES = [
   { id: 'pokemon', name: 'Pokémon', emoji: '⚡', color: '#E63946', available: true },
@@ -507,7 +508,8 @@ const FRANCHISES = [
   }, []);
   useEffect(() => {
     if (searchSuggestTimeout.current) clearTimeout(searchSuggestTimeout.current);
-    if (query.trim().length >= 1 && results.length === 0 && !loading) {
+    // Only show API suggestions when local catalog is not ready
+    if (query.trim().length >= 1 && results.length === 0 && !loading && screen === SCREENS.SEARCH && !catalogReady) {
       searchSuggestTimeout.current = setTimeout(() => {
         fetchSearchSuggestions(query);
       }, 300);
@@ -515,7 +517,7 @@ const FRANCHISES = [
       setSearchSuggestions([]);
       setShowSearchSuggestions(false);
     }
-  }, [query, results, loading]);
+  }, [query, results, loading, screen, catalogReady]);
   // Auto-sync to Supabase when important data changes
   useEffect(() => {
     if (deviceId && purchaseLogs.length + Object.keys(ownedCards).length + wishlist.length > 0) {
@@ -1434,10 +1436,16 @@ const FRANCHISES = [
   };
 
   
-  const renderHeader = () => (
+  const renderHeader = (showBack = false, onBack = () => setScreen(SCREENS.SEARCH)) => (
     <View style={{ marginBottom: 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={{ color: theme.text, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>TCG Market Master</Text>
+        {showBack ? (
+          <TouchableOpacity onPress={onBack} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: theme.chip, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 22 }}>←</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={{ color: theme.text, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>TCG Market Master</Text>
+        )}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <TouchableOpacity
             style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: user ? theme.accent : theme.chip, alignItems: 'center', justifyContent: 'center' }}
@@ -1655,9 +1663,8 @@ const FRANCHISES = [
   if (screen === SCREENS.SETTINGS) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
-        {renderTabBar()}
-        <ScrollView>
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.appearance}</Text>
           <TouchableOpacity style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]} onPress={toggleDarkMode}>
             <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.darkMode}</Text>
@@ -1666,26 +1673,46 @@ const FRANCHISES = [
             </View>
           </TouchableOpacity>
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.appLanguage}</Text>
-          <View style={styles.settingsLangGrid}>
-            {APP_LANGUAGES.map((lang) => (
-              <TouchableOpacity key={lang.code} style={[styles.settingsLangButton, { borderColor: appLang === lang.code ? theme.accent : theme.cardBorder, backgroundColor: appLang === lang.code ? theme.accentLight : theme.card }]} onPress={() => saveAppLang(lang.code)}>
-                <Text style={styles.settingsLangFlag}>{lang.flag}</Text>
-                <Text style={[styles.settingsLangLabel, { color: appLang === lang.code ? theme.accent : theme.text }]}>{lang.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.cardLanguage}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.languageRow}>
-              {CARD_LANGUAGES.map((lang) => (
-                <TouchableOpacity key={lang.code} style={[styles.langButton, { borderColor: cardLanguage === lang.code ? theme.accent : theme.cardBorder, backgroundColor: cardLanguage === lang.code ? theme.accentLight : theme.card }]} onPress={() => saveCardLanguage(lang.code)}>
-                  <Text style={styles.langFlag}>{lang.flag}</Text>
-                  <Text style={[styles.langLabel, { color: cardLanguage === lang.code ? theme.accent : theme.textSecondary }]}>{lang.label}</Text>
+          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              style={{ width: SCREEN_WIDTH - 40 }}
+              snapToInterval={SCREEN_WIDTH - 40}
+              decelerationRate="fast"
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
+                if (index >= 0 && index < APP_LANGUAGES.length) {
+                  saveAppLang(APP_LANGUAGES[index].code);
+                }
+              }}
+            >
+              {APP_LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={{ width: SCREEN_WIDTH - 40, alignItems: 'center', paddingVertical: 20 }}
+                  onPress={() => saveAppLang(lang.code)}
+                >
+                  <View style={{
+                    width: 80, height: 80, borderRadius: 40,
+                    backgroundColor: appLang === lang.code ? theme.accent : theme.chip,
+                    alignItems: 'center', justifyContent: 'center',
+                    marginBottom: 10
+                  }}>
+                    <Text style={{ fontSize: 36 }}>{lang.flag}</Text>
+                  </View>
+                  <Text style={{ color: appLang === lang.code ? theme.accent : theme.text, fontWeight: '700', fontSize: 18 }}>{lang.label}</Text>
                 </TouchableOpacity>
               ))}
+            </ScrollView>
+            <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+              {APP_LANGUAGES.map((lang) => (
+                <View key={lang.code} style={{ width: appLang === lang.code ? 20 : 6, height: 6, borderRadius: 3, backgroundColor: appLang === lang.code ? theme.accent : theme.cardBorder }} />
+              ))}
             </View>
-          </ScrollView>
-          {isPhase2Language && <Text style={[styles.phase2Note, { color: theme.variantBorder }]}>{t.phase2Note}</Text>}
+          </View>
+          
 
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.vendorDefaults}</Text>
 
@@ -1693,30 +1720,30 @@ const FRANCHISES = [
             <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.singles}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{percentage}%</Text>
           </View>
-          <View style={styles.sliderRow}>
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
-            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={percentage} onValueChange={(val) => savePercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 8 }}>
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 36, textAlign: 'center' }}>10%</Text>
+            <Slider style={{ flex: 1, height: 60 }} minimumValue={10} maximumValue={100} step={5} value={percentage} onValueChange={(val) => savePercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 40, textAlign: 'center' }}>100%</Text>
           </View>
 
           <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
             <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.sealedProducts}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{sealedPercentage}%</Text>
           </View>
-          <View style={styles.sliderRow}>
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
-            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={sealedPercentage} onValueChange={(val) => saveSealedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 8 }}>
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 36, textAlign: 'center' }}>10%</Text>
+            <Slider style={{ flex: 1, height: 60 }} minimumValue={10} maximumValue={100} step={5} value={sealedPercentage} onValueChange={(val) => saveSealedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 40, textAlign: 'center' }}>100%</Text>
           </View>
 
           <View style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
             <Text style={[styles.darkModeLabel, { color: theme.text }]}>{t.gradedCards}</Text>
             <Text style={[styles.percentageValue, { color: theme.accent }]}>{gradedPercentage}%</Text>
           </View>
-          <View style={styles.sliderRow}>
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
-            <Slider style={styles.slider} minimumValue={10} maximumValue={100} step={5} value={gradedPercentage} onValueChange={(val) => saveGradedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
-            <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>100%</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 8 }}>
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 36, textAlign: 'center' }}>10%</Text>
+            <Slider style={{ flex: 1, height: 60 }} minimumValue={10} maximumValue={100} step={5} value={gradedPercentage} onValueChange={(val) => saveGradedPercentage(val)} minimumTrackTintColor={theme.accent} maximumTrackTintColor={theme.cardBorder} thumbTintColor={theme.accent} />
+            <Text style={{ color: theme.textMuted, fontSize: 13, width: 40, textAlign: 'center' }}>100%</Text>
           </View>
 
         </ScrollView>
@@ -1838,7 +1865,7 @@ const FRANCHISES = [
   if (screen === SCREENS.BARTER) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -2018,7 +2045,7 @@ const FRANCHISES = [
     const vendorTotal = totalValue * (percentage / 100);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         <ScrollView>
           <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>{t.bulkTitle}</Text>
@@ -2110,7 +2137,7 @@ const FRANCHISES = [
     }, 0);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         <ScrollView>
           {/* Summary */}
@@ -2236,7 +2263,7 @@ const FRANCHISES = [
     const completion = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         {selectedSet ? (
           <>
@@ -2319,7 +2346,7 @@ const FRANCHISES = [
     const recentSets = sets.filter(s => new Date(s.releaseDate) <= today);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -2431,7 +2458,7 @@ const FRANCHISES = [
   if (screen === SCREENS.WISHLIST) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         {renderTabBar()}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, flex: 1 }}>⭐ Wishlist</Text>
@@ -2636,28 +2663,50 @@ const FRANCHISES = [
                   </TouchableOpacity>
                 </View>
 
-                {/* Center: search input */}
-                <TextInput
-                  style={{ flex: 1, backgroundColor: theme.input, borderWidth: 1.5, borderColor: theme.inputBorder, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, color: theme.text, fontSize: 16 }}
-                  placeholder={t.searchPlaceholder}
-                  placeholderTextColor={theme.textMuted}
-                  value={query}
-                  onChangeText={setQuery}
-                  onSubmitEditing={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
-                  returnKeyType="search"
-                />
+                {/* Center: search input + globe */}
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.input, borderWidth: 1.5, borderColor: theme.inputBorder, borderRadius: 16, paddingHorizontal: 12 }}>
+                  <TextInput
+                    style={{ flex: 1, paddingVertical: 18, color: theme.text, fontSize: 18 }}
+                    placeholder={t.searchPlaceholder}
+                    placeholderTextColor={theme.textMuted}
+                    value={query}
+                    onChangeText={setQuery}
+                    onSubmitEditing={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
+                    returnKeyType="search"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowLangDropdown(!showLangDropdown)}
+                    style={{ paddingLeft: 8, paddingRight: 4 }}
+                  >
+                    <Text style={{ fontSize: 22 }}>🌐</Text>
+                  </TouchableOpacity>
+                </View>
 
-                {/* Right: search button */}
-                <TouchableOpacity
-                  style={{ height: 52, paddingHorizontal: 18, borderRadius: 14, backgroundColor: theme.accent, alignItems: 'center', justifyContent: 'center' }}
-                  onPress={() => { setShowSearchSuggestions(false); setSearchSuggestions([]); searchCards(); }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>{t.search}</Text>
-                </TouchableOpacity>
+                
               </View>
             </View>
           )}
           {listening && <Text style={[styles.listeningText, { color: theme.accent }]}>{t.listening}</Text>}
+
+          {showLangDropdown && (
+            <View style={{ backgroundColor: theme.card, borderRadius: 16, borderWidth: 1, borderColor: theme.cardBorder, marginBottom: 8, paddingVertical: 8, elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, maxHeight: 320 }}>
+              <Text style={{ color: theme.textMuted, fontSize: 12, fontWeight: '700', textAlign: 'center', paddingVertical: 8, letterSpacing: 1 }}>{t.cardLanguage.toUpperCase()}</Text>
+              <View style={{ height: 1, backgroundColor: theme.cardBorder, marginHorizontal: 16, marginBottom: 4 }} />
+              <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={true}>
+              {CARD_LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  onPress={() => { saveCardLanguage(lang.code); setShowLangDropdown(false); }}
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: cardLanguage === lang.code ? theme.accentLight : 'transparent' }}
+                >
+                  <Text style={{ fontSize: 22, marginRight: 14 }}>{lang.flag}</Text>
+                  <Text style={{ flex: 1, color: cardLanguage === lang.code ? theme.accent : theme.text, fontSize: 15, fontWeight: cardLanguage === lang.code ? '700' : '400' }}>{lang.label}</Text>
+                  {cardLanguage === lang.code && <Text style={{ color: theme.accent, fontSize: 18 }}>✓</Text>}
+                </TouchableOpacity>
+              ))}
+              </ScrollView>
+            </View>
+          )}
 
           {showSearchSuggestions && searchSuggestions.length > 0 && (
             <View style={{ width: '100%', backgroundColor: theme.card, borderRadius: 10, borderWidth: 1, borderColor: theme.cardBorder, marginBottom: 8, maxHeight: 300 }}>
