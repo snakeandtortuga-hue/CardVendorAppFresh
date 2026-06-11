@@ -72,7 +72,7 @@ const TRANSLATIONS = {
     market: 'Market', targetPrice: 'Target Price ($)', atTarget: '✅ At target',
     upcoming: 'UPCOMING', recentReleases: 'RECENT RELEASES', trendingCards: '🔥 Trending Cards',
     highestValued: 'Highest valued cards right now', priceMovers: '📊 Price Movers',
-    gainers: '{t.gainers}', losers: '{t.losers}', refreshData: '{t.refreshData}',
+    gainers: '{t.gainers}', losers: '{t.losers}', refreshData: '',
     bulkTitle: '📋 Bulk Lookup', bulkSubtitle: 'Enter one card name per line.',
     lookUpAll: '🔍 Look Up All Cards', found: 'Found', marketTotal: 'Market Total', yourTotal: 'Your Total',
     shareBtn: 'Share', displayBtn: 'Display', logPurchase: 'Log Purchase',
@@ -1669,7 +1669,14 @@ const FRANCHISES = [
   if (screen === SCREENS.SETTINGS) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        <View style={{ marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
+          </TouchableOpacity>
+          <Text style={{ color: theme.text, fontSize: 20, fontWeight: '800' }}>Settings</Text>
+          <View style={{ width: 80 }} />
+        </View>
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.appearance}</Text>
           <TouchableOpacity style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]} onPress={toggleDarkMode}>
@@ -1871,7 +1878,7 @@ const FRANCHISES = [
   if (screen === SCREENS.BARTER) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -1882,7 +1889,7 @@ const FRANCHISES = [
             {/* YOUR DECK */}
             
               <View style={{ borderRadius: 12, padding: 12, alignItems: 'center', marginBottom: 10, height: 70, justifyContent: 'center', backgroundColor: '#2563EB' }}>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>You</Text>
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 18 }}>YOU</Text>
                 <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 22, fontWeight: '800', marginTop: 2 }}>${myTotal.toFixed(2)}</Text>
               </View>
               {myDeck.map((entry) => (
@@ -1919,7 +1926,7 @@ const FRANCHISES = [
             {/* THEIR DECK */}
             <View style={{ flex: 1, marginTop: 0 }}>
               <View style={{ borderRadius: 12, padding: 12, alignItems: 'center', marginBottom: 10, height: 70, justifyContent: 'center', backgroundColor: '#E63946' }}>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Vendor</Text>
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 18 }}>THEM</Text>
                 <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 22, fontWeight: '800', marginTop: 2 }}>${theirTotal.toFixed(2)}</Text>
               </View>
               {theirDeck.map((entry) => (
@@ -2051,7 +2058,7 @@ const FRANCHISES = [
     const vendorTotal = totalValue * (percentage / 100);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView>
           <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>{t.bulkTitle}</Text>
@@ -2143,7 +2150,7 @@ const FRANCHISES = [
     }, 0);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView>
           {/* Summary */}
@@ -2269,7 +2276,7 @@ const FRANCHISES = [
     const completion = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         {selectedSet ? (
           <>
@@ -2352,7 +2359,7 @@ const FRANCHISES = [
     const recentSets = sets.filter(s => new Date(s.releaseDate) <= today);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -2397,7 +2404,7 @@ const FRANCHISES = [
           </ScrollView>
 
           {/* TRENDING CARDS */}
-          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12 }]}>🔥 Trending Cards</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 8, marginTop: 0 }]}>{t.trendingCards}</Text>
           <Text style={{ color: theme.textMuted, fontSize: 12, marginBottom: 12 }}>{t.highestValued}</Text>
           {discoverLoading ? (
             <ActivityIndicator size="large" color={theme.accent} />
@@ -2406,7 +2413,7 @@ const FRANCHISES = [
               const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
               return (
                 <TouchableOpacity key={card.id} onPress={() => selectCard(card)}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.cardBorder }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 10, padding: 8, marginBottom: 6, borderWidth: 1, borderColor: theme.cardBorder }}>
                     <Text style={{ color: theme.textMuted, fontWeight: 'bold', fontSize: 16, width: 28 }}>#{index + 1}</Text>
                     <Image source={{ uri: card.images?.small }} style={{ width: 44, height: 62, borderRadius: 4, marginRight: 12 }} />
                     <View style={{ flex: 1 }}>
@@ -2416,7 +2423,7 @@ const FRANCHISES = [
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={{ color: theme.accent, fontWeight: 'bold', fontSize: 18 }}>${price.toFixed(2)}</Text>
-                      <Text style={{ color: '#4caf50', fontSize: 11, marginTop: 2 }}>{t.hot}</Text>
+                      <Text style={{ color: '#4caf50', fontSize: 11, marginTop: 2 }}>▲ Hot</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -2425,10 +2432,10 @@ const FRANCHISES = [
           )}
 
           {/* BIGGEST GAINERS & LOSERS */}
-          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 8 }]}>📊 Price Movers</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 0 }]}>{t.priceMovers}</Text>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#4caf50' }}>
-              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>{t.gainers}</Text>
+              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ Gainers</Text>
               {trendingCards.slice(0, 5).map((card) => {
                 const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
                 return (
@@ -2453,9 +2460,7 @@ const FRANCHISES = [
             </View>
           </View>
 
-          <TouchableOpacity style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: theme.accent, alignItems: 'center', marginBottom: 30 }} onPress={fetchDiscoverData}>
-            <Text style={{ color: theme.accent, fontWeight: 'bold' }}>{t.refreshData}</Text>
-          </TouchableOpacity>
+          
 
         </ScrollView>
       </View>
@@ -2464,7 +2469,7 @@ const FRANCHISES = [
   if (screen === SCREENS.WISHLIST) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
+        {renderHeader()}
         {renderTabBar()}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, flex: 1 }}>⭐ Wishlist</Text>
