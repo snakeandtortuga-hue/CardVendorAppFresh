@@ -989,8 +989,13 @@ const FRANCHISES = [
     if (!barterQuery.trim()) return;
     setBarterLoading(true);
     try {
-      const allCards = await fetchAllCards(barterQuery);
-      setBarterResults(allCards);
+      if (catalogReady && localCatalog.length > 0) {
+        const results = searchLocalCatalog(barterQuery);
+        setBarterResults(results);
+      } else {
+        const allCards = await fetchAllCards(barterQuery);
+        setBarterResults(allCards);
+      }
     } catch (error) { console.error(error); }
     setBarterLoading(false);
   };
@@ -1588,8 +1593,9 @@ const FRANCHISES = [
   if (showAuth) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg, justifyContent: 'center' }]}>
-        <TouchableOpacity onPress={() => setShowAuth(false)} style={{ position: 'absolute', top: 40, left: 20 }}>
-          <Text style={{ color: theme.accent, fontSize: 16 }}>← Back</Text>
+        <TouchableOpacity onPress={() => setShowAuth(false)} style={{ position: 'absolute', top: 40, left: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
+          <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+          <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginBottom: 40 }}>
