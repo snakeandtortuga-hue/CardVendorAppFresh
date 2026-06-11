@@ -1669,14 +1669,7 @@ const FRANCHISES = [
   if (screen === SCREENS.SETTINGS) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        <View style={{ marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
-            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
-            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
-          </TouchableOpacity>
-          <Text style={{ color: theme.text, fontSize: 20, fontWeight: '800' }}>Settings</Text>
-          <View style={{ width: 80 }} />
-        </View>
+        {renderHeader(true, () => setScreen(SCREENS.SEARCH))}
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.appearance}</Text>
           <TouchableOpacity style={[styles.darkModeRow, { backgroundColor: theme.card, borderColor: theme.cardBorder }]} onPress={toggleDarkMode}>
@@ -2150,7 +2143,14 @@ const FRANCHISES = [
     }, 0);
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        <View style={{ marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
+          </TouchableOpacity>
+          <Text style={{ color: theme.text, fontSize: 20, fontWeight: '800' }}>💰 Logs</Text>
+          <View style={{ width: 80 }} />
+        </View>
         {renderTabBar()}
         <ScrollView>
           {/* Summary */}
@@ -2435,7 +2435,7 @@ const FRANCHISES = [
           <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 0 }]}>{t.priceMovers}</Text>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#4caf50' }}>
-              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ Gainers</Text>
+              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ {t.gainers}</Text>
               {trendingCards.slice(0, 5).map((card) => {
                 const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
                 return (
@@ -2469,7 +2469,14 @@ const FRANCHISES = [
   if (screen === SCREENS.WISHLIST) {
     return (
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
-        {renderHeader()}
+        <View style={{ marginBottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
+          </TouchableOpacity>
+          <Text style={{ color: theme.text, fontSize: 20, fontWeight: '800' }}>⭐ Wishlist</Text>
+          <View style={{ width: 80 }} />
+        </View>
         {renderTabBar()}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ fontSize: 22, fontWeight: 'bold', color: theme.text, flex: 1 }}>⭐ Wishlist</Text>
@@ -2803,23 +2810,24 @@ const FRANCHISES = [
             </View>
           )}
           {results.length === 0 && !loading && !searchError && query.trim() === '' && (
-            <>
+            <View style={{ position: 'absolute', bottom: 80, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, zIndex: 999 }}>
               <TouchableOpacity
-                style={{ position: 'absolute', bottom: 80, left: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 10 }}
                 onPress={() => setScreen(SCREENS.WISHLIST)}
               >
                 <Text style={{ fontSize: 22 }}>⭐</Text>
                 <Text style={{ color: theme.text, fontWeight: '600', fontSize: 14 }}>Wishlist</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ position: 'absolute', bottom: 80, right: 20, flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: theme.cardBorder, gap: 8, elevation: 10 }}
                 onPress={() => setScreen(SCREENS.LOGS)}
               >
                 <Text style={{ fontSize: 22 }}>💰</Text>
                 <Text style={{ color: theme.text, fontWeight: '600', fontSize: 14 }}>Logs</Text>
               </TouchableOpacity>
-            </>
+            </View>
           )}
+          {null}
           {!loading && results.length === 0 && !searchError && query.trim() !== '' && (
             <View style={{ alignItems: 'center', marginVertical: 40 }}>
               <Text style={{ fontSize: 40 }}>🔍</Text>
