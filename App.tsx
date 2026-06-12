@@ -1524,22 +1524,22 @@ const FRANCHISES = [
               }}
             >
               <View style={{
-                width: 110,
-                height: 110,
-                borderRadius: 55,
+                width: 140,
+                height: 140,
+                borderRadius: 70,
                 backgroundColor: f.available ? f.color : theme.chip,
                 alignItems: 'center',
                 justifyContent: 'center',
                 opacity: f.available ? 1 : 0.4,
                 elevation: f.available ? 10 : 0,
               }}>
-                <Text style={{ fontSize: 48 }}>{f.emoji}</Text>
+                <Text style={{ fontSize: 60 }}>{f.emoji}</Text>
               </View>
               <Text style={{
                 color: f.available ? theme.text : theme.textMuted,
-                fontSize: 22,
-                fontWeight: '700',
-                marginTop: 14,
+                fontSize: 26,
+                fontWeight: '800',
+                marginTop: 16,
                 textAlign: 'center',
               }}>{f.name}</Text>
               {!f.available && (
@@ -2775,7 +2775,7 @@ const FRANCHISES = [
           )}
 
           {results.length === 0 && !loading && !searchError && query.trim() === '' && (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 }}>
+            <View style={{ alignItems: 'center', paddingHorizontal: 20, paddingTop: 40 }}>
               
               {/* Top text */}
               <View style={{ alignItems: 'center' }}>
@@ -2785,8 +2785,8 @@ const FRANCHISES = [
                 </Text>
               </View>
 
-              {/* Franchise Carousel — centered */}
-              <View style={{ flex: 1, justifyContent: 'center', width: '100%' }}>
+              {/* Franchise Carousel */}
+              <View style={{ width: '100%', marginTop: 20 }}>
                 {renderFranchiseCarousel()}
               </View>
 
