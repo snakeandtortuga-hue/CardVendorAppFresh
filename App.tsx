@@ -72,7 +72,7 @@ const TRANSLATIONS = {
     market: 'Market', targetPrice: 'Target Price ($)', atTarget: '✅ At target',
     upcoming: 'UPCOMING', recentReleases: 'RECENT RELEASES', trendingCards: '🔥 Trending Cards',
     highestValued: 'Highest valued cards right now', priceMovers: '📊 Price Movers',
-    gainers: '{t.gainers}', losers: '{t.losers}', refreshData: '',
+    gainers: '▲ Gainers', losers: '{t.losers}', refreshData: '',
     bulkTitle: '📋 Bulk Lookup', bulkSubtitle: 'Enter one card name per line.',
     lookUpAll: '🔍 Look Up All Cards', found: 'Found', marketTotal: 'Market Total', yourTotal: 'Your Total',
     shareBtn: 'Share', displayBtn: 'Display', logPurchase: 'Log Purchase',
@@ -1074,6 +1074,12 @@ const FRANCHISES = [
     fetchEbayPrice(card.name);
   };
 
+  const fetchGradedEbayPrice = (card, grader, grade) => {
+    if (card && grader && grade) {
+      fetchEbayPrice(card.name, grader, grade);
+    }
+  };
+
   const lookupCert = async () => {
     if (!certNumber.trim()) return;
     setCertLoading(true);
@@ -1123,6 +1129,12 @@ const FRANCHISES = [
     if (selectedGrader === 'BGS') return BGS_GRADES;
     return CGC_GRADES;
   };
+
+  useEffect(() => {
+    if (isGraded && selectedCard) {
+      fetchGradedEbayPrice(selectedCard, selectedGrader, selectedGrade);
+    }
+  }, [isGraded, selectedGrader, selectedGrade]);
 
   const signUp = async () => {
     setAuthLoading(true);
@@ -1376,9 +1388,14 @@ const FRANCHISES = [
     return null;
   };
 
-  const fetchEbayPrice = async (cardName) => {
+  const fetchEbayPrice = async (cardName, grader = null, grade = null) => {
     try {
-      const query = encodeURIComponent(`${cardName} pokemon card`);
+      // Build query — if graded, include grader and grade for accurate results
+      let queryStr = `${cardName} pokemon card`;
+      if (grader && grade) {
+        queryStr = `${cardName} ${grader} ${grade} pokemon card`;
+      }
+      const query = encodeURIComponent(queryStr);
       const response = await fetch(`${PROXY_URL}/ebay/sold?query=${query}`);
       const data = await response.json();
       if (data.itemSummaries && data.itemSummaries.length > 0) {
@@ -1388,9 +1405,10 @@ const FRANCHISES = [
         if (prices.length > 0) {
           const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
           const recent = parseFloat(data.itemSummaries[0].price?.value || 0);
+          const key = grader && grade ? `${cardName}_${grader}_${grade}` : cardName;
           setEbayPrices(prev => ({
             ...prev,
-            [cardName]: { sold: recent, avg30: avg }
+            [key]: { sold: recent, avg30: avg }
           }));
         }
       }
@@ -1418,7 +1436,7 @@ const FRANCHISES = [
   };
 
   const getAnchorPrice = () => getPrice(selectedCard, anchorSource);
-  const conditionMultiplier = isGraded ? 1.0 : CONDITIONS[conditionIndex].multiplier;
+  const conditionMultiplier = 1.0;
   const anchorPrice = selectedCard ? getAnchorPrice() : null;
   const activePercentage = isGraded ? gradedPercentage : percentage;
   const vendorPrice = anchorPrice ? anchorPrice * (activePercentage / 100) * conditionMultiplier : null;
@@ -2433,9 +2451,9 @@ const FRANCHISES = [
 
           {/* BIGGEST GAINERS & LOSERS */}
           <Text style={[styles.sectionTitle, { color: theme.text, fontSize: 18, marginBottom: 12, marginTop: 0 }]}>{t.priceMovers}</Text>
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 60 }}>
             <View style={{ flex: 1, backgroundColor: theme.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#4caf50' }}>
-              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ {t.gainers}</Text>
+              <Text style={{ color: '#4caf50', fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>▲ ▲ Gainers</Text>
               {trendingCards.slice(0, 5).map((card) => {
                 const price = card.tcgplayer?.prices?.holofoil?.market || card.tcgplayer?.prices?.normal?.market || 0;
                 return (
@@ -3046,13 +3064,39 @@ const FRANCHISES = [
             )}
 
             <View style={[styles.priceBox, { backgroundColor: theme.priceBox }]}>
-              <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>{sourceLabel[anchorSource]} {t.marketPrice}</Text>
-              {getAnchorPrice() ? <Text style={[styles.price, { color: theme.text }]}>${getAnchorPrice().toFixed(2)}</Text> : <Text style={[styles.noPrice, { color: theme.textMuted }]}>{t.noPrice}</Text>}
+              <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>
+                {isGraded ? `eBay Sold — ${selectedGrader} ${selectedGrade}` : `${sourceLabel[anchorSource]} ${t.marketPrice}`}
+              </Text>
+              {isGraded ? (
+                getPrice(selectedCard, 'ebay_sold') ? (
+                  <Text style={[styles.price, { color: theme.text }]}>${getPrice(selectedCard, 'ebay_sold').toFixed(2)}</Text>
+                ) : (
+                  <View style={{ alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={theme.accent} style={{ marginVertical: 8 }} />
+                    <Text style={{ color: theme.textMuted, fontSize: 12 }}>Searching eBay for {selectedGrader} {selectedGrade} sales...</Text>
+                  </View>
+                )
+              ) : (
+                getAnchorPrice() ? <Text style={[styles.price, { color: theme.text }]}>${getAnchorPrice().toFixed(2)}</Text> : <Text style={[styles.noPrice, { color: theme.textMuted }]}>{t.noPrice}</Text>
+              )}
             </View>
 
             <View style={[styles.vendorBox, { backgroundColor: theme.accentLight }]}>
               <Text style={[styles.vendorLabel, { color: theme.accent }]}>{t.yourPrice} ({activePercentage}% — {isGraded ? `${selectedGrader} ${selectedGrade}` : CONDITIONS[conditionIndex].label})</Text>
-              {vendorPrice ? <Text style={[styles.vendorPrice, { color: theme.accent }]}>${vendorPrice.toFixed(2)}</Text> : <Text style={[styles.noPrice, { color: theme.textMuted }]}>—</Text>}
+              {isGraded ? (
+                getPrice(selectedCard, 'ebay_sold') ? (
+                  <Text style={[styles.vendorPrice, { color: theme.accent }]}>
+                    ${(getPrice(selectedCard, 'ebay_sold') * (gradedPercentage / 100)).toFixed(2)}
+                  </Text>
+                ) : (
+                  <View style={{ alignItems: 'center', marginVertical: 8 }}>
+                    <Text style={{ color: theme.textMuted, fontSize: 13, textAlign: 'center' }}>⚠️ No verified graded price data</Text>
+                    <Text style={{ color: theme.textMuted, fontSize: 11, textAlign: 'center', marginTop: 4 }}>Check eBay for {selectedGrader} {selectedGrade} sold listings</Text>
+                  </View>
+                )
+              ) : (
+                vendorPrice ? <Text style={[styles.vendorPrice, { color: theme.accent }]}>${vendorPrice.toFixed(2)}</Text> : <Text style={[styles.noPrice, { color: theme.textMuted }]}>—</Text>
+              )}
               <Text style={[styles.percentageValue, { color: theme.accent }]}>{percentage}%</Text>
               <View style={styles.sliderRow}>
                 <Text style={[styles.sliderLabel, { color: theme.textMuted }]}>10%</Text>
