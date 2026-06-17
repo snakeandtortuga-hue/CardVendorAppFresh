@@ -10,23 +10,25 @@ import Slider from '@react-native-community/slider';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const LIGHT = {
-  bg: '#F5F5F7', card: '#FFFFFF', cardBorder: '#E8E8ED', input: '#FFFFFF',
-  inputBorder: '#D1D1D6', text: '#1A1A2E', textSecondary: '#6B6B80',
-  textMuted: '#A0A0B0', accent: '#E63946', accentLight: '#FFF0F1',
-  priceBox: '#FFFFFF', variantBox: '#FFFBF0', variantBorder: '#F4A261',
-  gradedBox: '#F5F5F7', chip: '#EBEBF0', chipText: '#3A3A4A',
-  tabBg: '#FFFFFF', deltaClean: '#E8F5E9', deltaPos: '#FFF8E1', deltaNeg: '#FFF0F1',
-  deckCard: '#F5F5F7', clearButton: '#D1D1D6', sectionTitle: '#3A3A4A',
+  bg: '#E8EDF5', card: '#FFFFFF', cardBorder: '#C8D0DF', input: '#FFFFFF',
+  inputBorder: '#B0BCCE', text: '#0A0E1A', textSecondary: '#3A4560',
+  textMuted: '#7A8499', accent: '#F4C430', accentLight: '#FFF8E1',
+  priceBox: '#FFFFFF', variantBox: '#FFF8E1', variantBorder: '#F4C430',
+  gradedBox: '#F0F4FA', chip: '#DDE3EF', chipText: '#0A0E1A',
+  tabBg: '#FFFFFF', deltaClean: '#E8F5E9', deltaPos: '#FFF8E1', deltaNeg: '#FFF0F0',
+  deckCard: '#F0F4FA', clearButton: '#C8D0DF', sectionTitle: '#3A4560',
+  blue: '#2B8FFF', purple: '#7B3FE4', gold: '#F4C430',
 };
 
 const DARK = {
-  bg: '#0D0D0D', card: '#1A1A1A', cardBorder: '#2A2A2A', input: '#1A1A1A',
-  inputBorder: '#333333', text: '#F2F2F7', textSecondary: '#A0A0B0',
-  textMuted: '#58585A', accent: '#E63946', accentLight: '#2A1215',
-  priceBox: '#1A1A1A', variantBox: '#1A1500', variantBorder: '#F4A261',
-  gradedBox: '#1A1A1A', chip: '#2A2A2A', chipText: '#C7C7CC',
-  tabBg: '#1A1A1A', deltaClean: '#1A2E1A', deltaPos: '#2A2500', deltaNeg: '#2A1215',
-  deckCard: '#1A1A1A', clearButton: '#333333', sectionTitle: '#A0A0B0',
+  bg: '#0A0E1A', card: '#111827', cardBorder: '#1E2A3E', input: '#111827',
+  inputBorder: '#1E2A3E', text: '#F0F4FF', textSecondary: '#8A9BB8',
+  textMuted: '#4A5568', accent: '#F4C430', accentLight: '#2A1F00',
+  priceBox: '#111827', variantBox: '#1A1500', variantBorder: '#F4C430',
+  gradedBox: '#111827', chip: '#1E2A3E', chipText: '#C0CDE0',
+  tabBg: '#111827', deltaClean: '#0A2A1A', deltaPos: '#2A1F00', deltaNeg: '#2A0A0A',
+  deckCard: '#111827', clearButton: '#1E2A3E', sectionTitle: '#8A9BB8',
+  blue: '#2B8FFF', purple: '#7B3FE4', gold: '#F4C430',
 };
 
 const APP_LANGUAGES = [
@@ -62,7 +64,7 @@ const TRANSLATIONS = {
     darkMode: 'Dark Mode', appearance: 'Appearance', noResults: 'No results found.',
     vendorDefaults: 'Vendor Price Defaults', singlesCat: 'Singles', sealedProducts: 'Sealed Products', gradedCards: 'Graded Cards',
     trackerTitle: 'Set Completion Tracker', trackerSubtitle: 'Tap a set to track which cards you own.',
-    backToSets: '← Back to Sets', cards: 'cards', ownedOf: 'owned',
+    backToSets: 'Back', cards: 'cards', ownedOf: 'owned',
     saveTradeRecord: '💾 Save Trade Record', clearTrade2: '🗑 Clear Trade', viewSavedTrades: '▼ View Saved Trades', hideSavedTrades: '▲ Hide Saved Trades',
     noSavedTrades: 'No saved trades yet.', yourDeckLabel: 'You', theirDeckLabel: 'Vendor',
     totalEntries: 'Total Entries', totalItems: 'Total Items', totalSpent: 'Total Spent',
@@ -1463,8 +1465,9 @@ const FRANCHISES = [
     <View style={{ marginBottom: 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {showBack ? (
-          <TouchableOpacity onPress={onBack} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: theme.chip, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 22 }}>←</Text>
+          <TouchableOpacity onPress={onBack} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
           </TouchableOpacity>
         ) : (
           <Text style={{ color: theme.text, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>TCG Market Master</Text>
@@ -1780,9 +1783,10 @@ const FRANCHISES = [
       <View style={[styles.container, { backgroundColor: theme.bg }]}>
         <Text style={[styles.title, { color: theme.text }]}>{t.title}</Text>
         {renderTabBar()}
-        <TouchableOpacity onPress={() => setScreen(SCREENS.BARTER)}>
-          <Text style={[styles.back, { color: theme.accent }]}>{t.backTrade}</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setScreen(SCREENS.BARTER)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6, alignSelf: 'flex-start', marginBottom: 10 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
+          </TouchableOpacity>
         <Text style={[styles.sectionTitle, { color: theme.sectionTitle }]}>{t.addingTo} {barterTarget === 'my' ? t.yourDeck : t.theirDeck}</Text>
 
         {/* Item Type Selector */}
@@ -2298,8 +2302,9 @@ const FRANCHISES = [
         {renderTabBar()}
         {selectedSet ? (
           <>
-            <TouchableOpacity onPress={() => { setSelectedSet(null); setSetCards([]); }}>
-              <Text style={[styles.back, { color: theme.accent }]}>{t.backToSets}</Text>
+            <TouchableOpacity onPress={() => { setSelectedSet(null); setSetCards([]); }} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6, alignSelf: 'flex-start', marginBottom: 10 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+              <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
             </TouchableOpacity>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <Image source={{ uri: selectedSet.images?.logo }} style={{ width: 80, height: 32, resizeMode: 'contain', marginRight: 10 }} />
@@ -2877,8 +2882,9 @@ const FRANCHISES = [
 
       {screen === SCREENS.CARD && selectedCard && (
         <ScrollView>
-          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)}>
-            <Text style={[styles.back, { color: theme.accent }]}>{t.back}</Text>
+          <TouchableOpacity onPress={() => setScreen(SCREENS.SEARCH)} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.chip, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 22, gap: 6, alignSelf: 'flex-start', marginBottom: 10 }}>
+            <Text style={{ color: theme.accent, fontSize: 24 }}>←</Text>
+            <Text style={{ color: theme.accent, fontSize: 16, fontWeight: '700' }}>Back</Text>
           </TouchableOpacity>
           <View style={styles.detailContainer}>
             <View style={[styles.languageBadge, { backgroundColor: theme.chip }]}>
